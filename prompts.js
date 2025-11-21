@@ -3,7 +3,7 @@
 // 'title': Lo que se ve en la lista.
 // 'text': Lo que se escribe en la caja de texto.
 
-const PREDEFINED_PROMPTS = [
+var PREDEFINED_PROMPTS = [
     { 
         title: "Seleccionar Prompt..", 
         text: "" 
