@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"> <title>Configuración IA</title>
+  <style>
+    body { 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+      padding: 24px; 
+      width: 320px; 
+      color: #1f2937;
+      background-color: #f9fafb;
+    }
+    h3 { 
+      margin-top: 0; 
+      margin-bottom: 16px;
+      font-size: 18px;
+      color: #111827;
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: 10px;
+    }
+    p {
+      font-size: 14px;
+      color: #4b5563;
+      margin-bottom: 8px;
+    }
+    input { 
+      width: 100%; 
+      padding: 10px; 
+      margin-bottom: 16px; 
+      box-sizing: border-box; 
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 14px;
+      outline: none;
+    }
+    input:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    }
+    button { 
+      background: #3b82f6; 
+      color: white; 
+      border: none; 
+      padding: 10px 15px; 
+      border-radius: 6px; 
+      cursor: pointer; 
+      width: 100%; 
+      font-size: 14px;
+      font-weight: 600;
+      transition: background-color 0.2s;
+    }
+    button:hover { 
+      background: #2563eb; 
+    }
+    .status { 
+      margin-top: 12px; 
+      font-size: 13px; 
+      min-height: 20px; 
+      text-align: center;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <h3>Configuración de API</h3>
+  <p>Pega tu Gemini API Key aquí:</p>
+  <input type="password" id="apiKey" placeholder="Ej: AIzaSy..." />
+  <button id="save">Guardar Cambios</button>
+  <div id="status" class="status"></div>
+  <script src="options.js"></script>
+</body>
+</html>
