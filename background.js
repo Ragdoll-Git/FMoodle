@@ -57,15 +57,14 @@ function captureScreenAndPrepareQuestion(tabId) {
   });
 }
 
-// 6. PROCESAMIENTO (Con API Key dinámica)
+// 6. PROCESAMIENTO (Actualizado a Estándar Gemini 2.5 - Nov 2025)
 async function processQuestionWithGemini(tabId, question, base64ImageData) {
   
-  // LEER API KEY DEL ALMACENAMIENTO
   chrome.storage.sync.get(['GEMINI_API_KEY'], async (items) => {
       const apiKey = items.GEMINI_API_KEY;
 
       if (!apiKey) {
-          sendMessageToContentScript(tabId, { action: "showError", message: "Falta la API Key. Ve a Opciones de la extensión y configúrala." });
+          sendMessageToContentScript(tabId, { action: "showError", message: "Falta la API Key. Ve a Opciones." });
           return;
       }
 
@@ -73,10 +72,16 @@ async function processQuestionWithGemini(tabId, question, base64ImageData) {
           contents: [{ parts: [{ text: question }, { inlineData: { mimeType: "image/png", data: base64ImageData } }] }]
       };
 
-      let usedModel = "gemini-2.5-flash"; 
+      // ACTUALIZACIÓN SEGÚN CORREO DE MIGRACIÓN:
+      // Usamos los modelos listados en la documentación oficial recibida.
+      const PRIMARY_MODEL = "gemini-2.5-flash";        // Modelo estándar 
+      const FALLBACK_MODEL = "gemini-2.5-flash-lite";  // Nuevo respaldo ligero 
+
+      let usedModel = PRIMARY_MODEL;
 
       const tryFetch = async (modelName) => {
-          const url = `${BASE_URL}${modelName}:generateContent?key=${apiKey}`; // Usamos la variable apiKey
+          // Mantenemos v1beta ya que suele tener los últimos checkpoints
+          const url = `${BASE_URL}${modelName}:generateContent?key=${apiKey}`; 
           return await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -85,25 +90,21 @@ async function processQuestionWithGemini(tabId, question, base64ImageData) {
       };
 
       try {
-        console.log("Intentando con modelo 2.5...");
-        let response = await tryFetch("gemini-2.5-flash");
+        console.log(`Intentando con ${PRIMARY_MODEL}...`);
+        let response = await tryFetch(PRIMARY_MODEL);
 
-        if (response.status === 503 || response.status === 500) {
-            usedModel = "gemini-1.5-flash";
-            response = await tryFetch("gemini-1.5-flash");
-        } else if (!response.ok) {
-            const errorClone = response.clone();
-            const errorData = await errorClone.json().catch(() => ({}));
-            const errMsg = errorData.error?.message || "";
-            if (errMsg.includes("overloaded") || errMsg.includes("quota")) {
-                usedModel = "gemini-1.5-flash";
-                response = await tryFetch("gemini-1.5-flash");
-            }
+        // Lógica de Fallback Mejorada:
+        // Si falla el 2.5 Flash (por error 503, 500, o incluso 404 si hubiera cambios raros),
+        // saltamos al 2.5 Flash Lite que es más ligero y estable.
+        if (!response.ok && (response.status >= 500 || response.status === 429 || response.status === 503)) {
+            console.warn(`Fallo ${PRIMARY_MODEL}. Cambiando a respaldo: ${FALLBACK_MODEL}...`);
+            usedModel = FALLBACK_MODEL;
+            response = await tryFetch(FALLBACK_MODEL);
         }
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.error?.message || response.statusText);
+            throw new Error(errorData.error?.message || `Error ${response.status}: ${response.statusText}`);
         }
 
         const result = await response.json();
@@ -115,11 +116,15 @@ async function processQuestionWithGemini(tabId, question, base64ImageData) {
               model: usedModel 
           });
         } else {
-          sendMessageToContentScript(tabId, { action: "showError", message: "La IA no generó texto." });
+          sendMessageToContentScript(tabId, { action: "showError", message: "La IA no generó respuesta." });
         }
 
       } catch (error) {
-        sendMessageToContentScript(tabId, { action: "showError", message: error.message });
+        console.error(error);
+        // Mostramos un mensaje más amigable si el error es de "Not Found"
+        let msg = error.message;
+        if (msg.includes("not found")) msg = "Modelo no disponible. Verifica tu API Key o la región.";
+        sendMessageToContentScript(tabId, { action: "showError", message: msg });
       }
   });
 }

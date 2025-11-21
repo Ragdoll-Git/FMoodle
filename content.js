@@ -1,19 +1,23 @@
-// content.js - Versión 3.0: Fix Scroll + Persistencia Minimizado + Tus Estilos
+// content.js - Versión 3.1: Fix SyntaxError (Doble Inyección)
 
-const SUMMARY_CONTAINER_ID = 'gemini-summary-popup-container';
-const POSITION_STORAGE_KEY = 'geminiPopupPosition';
-let currentImageData = null;
-let isPinned = false;
-let isMinimized = false; 
-let isMouseDown = false;
-let hasMoved = false;
-let dragOffsetX, dragOffsetY;
-
-// PROTECCIÓN CONTRA DOBLE INYECCIÓN
+// 1. PROTECCIÓN (MOVIDA AL PRINCIPIO)
+// Si el script ya corrió, detenemos la ejecución inmediatamente.
 if (window.hasRunGeminiExtension) {
   throw new Error("Script already injected"); 
 }
 window.hasRunGeminiExtension = true;
+
+// 2. VARIABLES GLOBALES (USAR VAR)
+// Usamos 'var' para evitar el error "Identifier already declared" al recargar.
+var SUMMARY_CONTAINER_ID = 'gemini-summary-popup-container';
+var POSITION_STORAGE_KEY = 'geminiPopupPosition';
+
+var currentImageData = null;
+var isPinned = false;
+var isMinimized = false; 
+var isMouseDown = false;
+var hasMoved = false;
+var dragOffsetX, dragOffsetY;
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'showLoading') {
@@ -140,9 +144,16 @@ function showPopup(content, isLoading = false, isAnswer = false, modelName = '')
     if (isAnswer) {
         let version = "";
         if (modelName) {
-            if (modelName.includes("1.5")) version = " (1.5)";
-            else if (modelName.includes("2.5")) version = " (2.5)";
-            else version = " (IA)";
+            // Lógica para mostrar nombres según el modelo recibido
+            if (modelName.includes("lite")) {
+                version = " (2.5 Lite)";
+            } else if (modelName.includes("2.5")) {
+                version = " (2.5 Flash)";
+            } else if (modelName.includes("1.5")) {
+                version = " (1.5 Flash)";
+            } else {
+                version = " (IA)";
+            }
         }
         titleElement.textContent = `Respuesta de la IA${version}`;
     } else {
