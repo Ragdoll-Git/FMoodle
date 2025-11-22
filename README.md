@@ -22,7 +22,7 @@ Extensión de Chrome para uso personal que captura la pantalla actual, la analiz
 
 ## � Instalación y Uso
 
-Para obtener la API Key, instalar y configurar la extensión, sigue las [**Instrucciones detalladas (clic aquí)**](./Instrucciones.md).
+Para obtener la API Key, instalar y configurar la extensión, sigue las [**Instrucciones detalladas (clic aquí)**](./INSTRUCCIONES.md).
 
 ## �🛠️ Estructura y Cambios Técnicos
 
