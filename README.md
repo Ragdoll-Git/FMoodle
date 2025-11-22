@@ -1,5 +1,5 @@
 # 📸 Resumen IA de Pantalla
-##### (Versión Local)
+#### (Versión Local)
 
 Extensión de Chrome para uso personal que captura la pantalla actual, la analiza con **Google Gemini** y permite realizar consultas técnicas, resúmenes o extracción de código.
 
@@ -20,7 +20,11 @@ Extensión de Chrome para uso personal que captura la pantalla actual, la analiz
 * **📝 Prompts Predefinidos:** Menú desplegable con instrucciones técnicas (ej: "Programación C/C++", "Tratamiento de Señales").
 * **⚙️ Configuración Segura (BYOK):** La API Key se gestiona desde el menú de Opciones y se guarda en el navegador.
 
-## 🛠️ Estructura y Cambios Técnicos
+## � Instalación y Uso
+
+Para obtener la API Key, instalar y configurar la extensión, sigue las [**Instrucciones detalladas (clic aquí)**](./Instrucciones.md).
+
+## �🛠️ Estructura y Cambios Técnicos
 
 Para que la extensión funcione, la carpeta debe contener estos archivos obligatorios:
 
