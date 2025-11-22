@@ -42,6 +42,8 @@ La extensión ahora opera como un Módulo ES6. La carpeta debe contener estos **
 * **`Error: The model has been decommissioned`**: Asegúrate de usar la versión más reciente de `groq.js` que apunta a *Llama 4 Scout* (los modelos beta cambian rápido).
 * **`Network Error / Failed to fetch`**: Revisa tu conexión. Si usas Groq, verifica que la API Key sea correcta en Opciones.
 * **`Extension context invalidated`**: Si actualizas la extensión, debes recargar la página web (F5) donde la estés usando.
+* **`Error 503 (Service Unavailable)`**: Saturación de Google. La extensión intentará usar el modelo "Lite" automáticamente.
+* **`Error 404 (Not Found)`**: Indica que el modelo buscado ya no existe (solucionado en esta versión al migrar de 1.5 a 2.5).
 
 ## 📜 Historial de Versiones
 
