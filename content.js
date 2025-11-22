@@ -23,13 +23,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'showLoading') {
     showPopup("Analizando tu pregunta...", true);
   } else if (request.action === 'showSummary') {
-    // Al recibir la respuesta, mantenemos el estado minimizado si el usuario lo activó
     showPopup(request.summary, false, true, request.model); 
   } else if (request.action === 'showError') {
     showPopup(`Error: ${request.message}`, false, true);
   } else if (request.action === 'showQuestionInput') {
-    currentImageData = request.imageData;
-    // Si abrimos una NUEVA captura, forzamos que se muestre la ventana
+    // CAMBIO: Ya no leemos request.imageData
     if (isMinimized) {
         isMinimized = false; 
     }
@@ -78,31 +76,68 @@ function applyMinimizeState(container) {
 }
 
 // --- SHOW INPUT ---
+
 function showQuestionInputPopup() {
   createPopup((container, header) => {
     header.querySelector('#gemini-popup-title').textContent = 'Pregunta a la IA';
     
+    // CONTENEDOR DE EXTRAS (Prompts + Proveedor)
     const extrasContainer = header.querySelector('#gemini-header-extras');
-    if (extrasContainer && typeof PREDEFINED_PROMPTS !== 'undefined') {
+    if (extrasContainer) {
         extrasContainer.innerHTML = ''; 
-        const select = document.createElement('select');
-        Object.assign(select.style, { maxWidth: '130px', fontSize: '12px', padding: '2px', borderRadius: '4px', border: '1px solid #ccc', marginLeft: '10px', cursor: 'pointer', backgroundColor: '#fff', color: '#333' });
-        PREDEFINED_PROMPTS.forEach(prompt => {
-            const option = document.createElement('option');
-            option.value = prompt.text; option.textContent = prompt.title;
-            select.appendChild(option);
+
+        // 1. SELECTOR DE PROMPTS
+        if (typeof PREDEFINED_PROMPTS !== 'undefined') {
+            const promptSelect = document.createElement('select');
+            Object.assign(promptSelect.style, { 
+                maxWidth: '110px', fontSize: '12px', padding: '2px', borderRadius: '4px', 
+                border: '1px solid #ccc', marginLeft: '5px', cursor: 'pointer'
+            });
+            
+            PREDEFINED_PROMPTS.forEach(prompt => {
+                const option = document.createElement('option');
+                option.value = prompt.text; option.textContent = prompt.title;
+                promptSelect.appendChild(option);
+            });
+            
+            promptSelect.onchange = () => {
+                const textArea = container.querySelector('textarea');
+                if (textArea && promptSelect.value) { textArea.value = promptSelect.value; textArea.focus(); }
+            };
+            promptSelect.onmousedown = (e) => e.stopPropagation();
+            extrasContainer.appendChild(promptSelect);
+        }
+
+        // 2. SELECTOR DE PROVEEDOR (GEMINI / GROQ)
+        const providerSelect = document.createElement('select');
+        providerSelect.id = 'gemini-provider-select';
+        Object.assign(providerSelect.style, { 
+            maxWidth: '80px', fontSize: '12px', padding: '2px', borderRadius: '4px', 
+            border: '1px solid #ccc', marginLeft: '5px', cursor: 'pointer', 
+            fontWeight: 'bold', color: '#2563eb' 
         });
-        select.onchange = () => {
-            const textArea = container.querySelector('textarea');
-            if (textArea && select.value) { textArea.value = select.value; textArea.focus(); }
+
+        const optGemini = document.createElement('option');
+        optGemini.value = 'gemini'; optGemini.textContent = 'Gemini';
+        const optGroq = document.createElement('option');
+        optGroq.value = 'groq'; optGroq.textContent = 'Groq';
+
+        providerSelect.append(optGemini, optGroq);
+
+        // Recuperar preferencia guardada
+        chrome.storage.local.get(['preferredProvider'], (data) => {
+            if (data.preferredProvider) providerSelect.value = data.preferredProvider;
+        });
+
+        providerSelect.onchange = () => {
+            chrome.storage.local.set({ preferredProvider: providerSelect.value });
         };
-        select.onmousedown = (e) => e.stopPropagation();
-        extrasContainer.appendChild(select);
+        providerSelect.onmousedown = (e) => e.stopPropagation();
+        extrasContainer.appendChild(providerSelect);
     }
 
     const contentDiv = document.createElement('div');
     contentDiv.className = 'gemini-content-body'; 
-    // El input necesita FLEX para alinearse con el botón
     contentDiv.dataset.displayMode = 'flex'; 
     Object.assign(contentDiv.style, { padding: '12px', display: 'flex', gap: '8px' });
 
@@ -117,9 +152,17 @@ function showQuestionInputPopup() {
 
     const submitQuestion = () => {
       const question = questionInput.value.trim();
-      if (question && currentImageData) {
-        showPopup("Pensando...", true); 
-        chrome.runtime.sendMessage({ action: "sendQuestionToGemini", question: question, base64ImageData: currentImageData });
+      // Obtenemos el proveedor seleccionado al momento de enviar
+      const selectedProvider = header.querySelector('#gemini-provider-select')?.value || 'gemini';
+
+      if (question) {
+        showPopup("Analizando...", true); 
+        // ENVIAMOS PREGUNTA + PROVEEDOR
+        chrome.runtime.sendMessage({ 
+            action: "sendQuestionToGemini", 
+            question: question,
+            provider: selectedProvider 
+        });
       }
     };
     

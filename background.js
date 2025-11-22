@@ -1,70 +1,98 @@
-// background.js - Versión Final Segura (Inyección + API Key Dinámica)
+// background.js - Versión Modular (Gemini + Groq)
+import { askGroq } from './groq.js';
 
-const BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/";
+const GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/";
 
-// 1. INSTALACIÓN
+// ALMACENAMIENTO TEMPORAL
+let temporaryScreenshots = {};
+
+// CONFIGURACIÓN RETRIES (Gemini)
+const MAX_RETRIES = 2; 
+const BASE_DELAY = 2000;
+
+// 1. INSTALACIÓN Y MENÚS
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({ id: "askGeminiAboutScreen", title: "Preguntar a la IA sobre esta pantalla", contexts: ["page", "selection", "image"] });
 });
 
-// 2. EVENTOS (Click derecho y Teclado)
 chrome.contextMenus.onClicked.addListener((info, tab) => { if (info.menuItemId === "askGeminiAboutScreen") iniciarProceso(tab); });
 
 chrome.commands.onCommand.addListener((command) => {
   if (command === "activar-captura") {
-    chrome.tabs.query({active: true, lastFocusedWindow: true}, (tabs) => {
-      if (tabs?.length > 0) iniciarProceso(tabs[0]);
-    });
+    chrome.tabs.query({active: true, lastFocusedWindow: true}, (tabs) => { if (tabs?.length > 0) iniciarProceso(tabs[0]); });
   }
 });
 
-// 3. FUNCIÓN DE INYECCIÓN Y CAPTURA (NUEVO)
+// 2. INYECCIÓN
 async function iniciarProceso(tab) {
     if (!tab.id || tab.url.startsWith('chrome://') || tab.url.startsWith('edge://')) return;
-
-    // Antes de capturar, inyectamos los scripts necesarios en la pestaña activa
     try {
-        await chrome.scripting.executeScript({
-            target: { tabId: tab.id },
-            files: ['prompts.js', 'content.js']
-        });
-    } catch (err) {
-        // Si falla (ej: "Script already injected" que pusimos en content.js), lo ignoramos y seguimos.
-        // Esto es normal si el usuario usa la extensión varias veces en la misma página.
-    }
-
-    // Una vez inyectado, procedemos a capturar
+        await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['prompts.js', 'content.js'] });
+    } catch (err) {}
     captureScreenAndPrepareQuestion(tab.id);
 }
 
-// 4. COMUNICACIÓN
+// 3. COMUNICACIÓN (ROUTER)
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "sendQuestionToGemini") {
-    processQuestionWithGemini(sender.tab.id, request.question, request.base64ImageData);
+    // Recibimos 'provider' desde content.js ('gemini' o 'groq')
+    processQuestionRouter(sender.tab.id, request.question, request.provider);
     sendResponse({ status: "processing" });
   }
 });
 
-// 5. CAPTURA
+// 4. CAPTURA
 function captureScreenAndPrepareQuestion(tabId) {
   chrome.tabs.captureVisibleTab(null, { format: "png" }, (dataUrl) => {
     if (chrome.runtime.lastError || !dataUrl) {
       sendMessageToContentScript(tabId, { action: "showError", message: "Error captura. Recarga la página." });
       return;
     }
-    const base64ImageData = dataUrl.split(',')[1];
-    sendMessageToContentScript(tabId, { action: "showQuestionInput", imageData: base64ImageData });
+    temporaryScreenshots[tabId] = dataUrl.split(',')[1];
+    sendMessageToContentScript(tabId, { action: "showQuestionInput" }); 
   });
 }
 
-// 6. PROCESAMIENTO (Actualizado a Estándar Gemini 2.5 - Nov 2025)
-async function processQuestionWithGemini(tabId, question, base64ImageData) {
-  
+// 5. PROCESAMIENTO PRINCIPAL (ROUTER)
+async function processQuestionRouter(tabId, question, provider = 'gemini') {
+    const base64ImageData = temporaryScreenshots[tabId];
+    
+    if (!base64ImageData) {
+        sendMessageToContentScript(tabId, { action: "showError", message: "La imagen ha caducado. Captura nuevamente." });
+        return;
+    }
+
+    // --- RUTA A: GROQ ---
+    if (provider === 'groq') {
+        chrome.storage.sync.get(['GROQ_API_KEY'], async (items) => {
+            if (!items.GROQ_API_KEY) {
+                sendMessageToContentScript(tabId, { action: "showError", message: "Falta Groq API Key. Configúrala en Opciones." });
+                return;
+            }
+            
+            // Usamos el módulo externo
+            const result = await askGroq(question, base64ImageData, items.GROQ_API_KEY);
+            delete temporaryScreenshots[tabId]; // Limpieza
+
+            if (result.success) {
+                sendMessageToContentScript(tabId, { action: "showSummary", summary: result.text, model: result.model });
+            } else {
+                sendMessageToContentScript(tabId, { action: "showError", message: result.error });
+            }
+        });
+        return; 
+    }
+
+    // --- RUTA B: GEMINI (Lógica original) ---
+    processQuestionWithGeminiOriginal(tabId, question, base64ImageData);
+}
+
+// --- LÓGICA GEMINI ORIGINAL (Refactorizada para recibir imagen) ---
+async function processQuestionWithGeminiOriginal(tabId, question, base64ImageData) {
   chrome.storage.sync.get(['GEMINI_API_KEY'], async (items) => {
       const apiKey = items.GEMINI_API_KEY;
-
       if (!apiKey) {
-          sendMessageToContentScript(tabId, { action: "showError", message: "Falta la API Key. Ve a Opciones." });
+          sendMessageToContentScript(tabId, { action: "showError", message: "Falta Gemini API Key. Ve a Opciones." });
           return;
       }
 
@@ -72,43 +100,28 @@ async function processQuestionWithGemini(tabId, question, base64ImageData) {
           contents: [{ parts: [{ text: question }, { inlineData: { mimeType: "image/png", data: base64ImageData } }] }]
       };
 
-      // ACTUALIZACIÓN SEGÚN CORREO DE MIGRACIÓN:
-      // Usamos los modelos listados en la documentación oficial recibida.
-      const PRIMARY_MODEL = "gemini-2.5-flash";        // Modelo estándar 
-      const FALLBACK_MODEL = "gemini-2.5-flash-lite";  // Nuevo respaldo ligero 
-
+      const PRIMARY_MODEL = "gemini-2.5-flash";
+      const FALLBACK_MODEL = "gemini-2.5-flash-lite";
       let usedModel = PRIMARY_MODEL;
-
-      const tryFetch = async (modelName) => {
-          // Mantenemos v1beta ya que suele tener los últimos checkpoints
-          const url = `${BASE_URL}${modelName}:generateContent?key=${apiKey}`; 
-          return await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-      };
 
       try {
         console.log(`Intentando con ${PRIMARY_MODEL}...`);
-        let response = await tryFetch(PRIMARY_MODEL);
+        let response = await fetchWithBackoff(`${GEMINI_BASE_URL}${PRIMARY_MODEL}:generateContent?key=${apiKey}`, payload);
 
-        // Lógica de Fallback Mejorada:
-        // Si falla el 2.5 Flash (por error 503, 500, o incluso 404 si hubiera cambios raros),
-        // saltamos al 2.5 Flash Lite que es más ligero y estable.
         if (!response.ok && (response.status >= 500 || response.status === 429 || response.status === 503)) {
-            console.warn(`Fallo ${PRIMARY_MODEL}. Cambiando a respaldo: ${FALLBACK_MODEL}...`);
+            console.warn(`Fallo ${PRIMARY_MODEL}. Cambiando a respaldo...`);
             usedModel = FALLBACK_MODEL;
-            response = await tryFetch(FALLBACK_MODEL);
+            response = await fetchWithBackoff(`${GEMINI_BASE_URL}${FALLBACK_MODEL}:generateContent?key=${apiKey}`, payload);
         }
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.error?.message || `Error ${response.status}: ${response.statusText}`);
+            throw new Error(errorData.error?.message || `Error ${response.status}`);
         }
 
         const result = await response.json();
-        
+        delete temporaryScreenshots[tabId]; 
+
         if (result.candidates?.[0]?.content?.parts?.[0]?.text) {
           sendMessageToContentScript(tabId, { 
               action: "showSummary", 
@@ -121,12 +134,36 @@ async function processQuestionWithGemini(tabId, question, base64ImageData) {
 
       } catch (error) {
         console.error(error);
-        // Mostramos un mensaje más amigable si el error es de "Not Found"
-        let msg = error.message;
-        if (msg.includes("not found")) msg = "Modelo no disponible. Verifica tu API Key o la región.";
+        let msg = error.message || "";
+        if (msg.includes("429") || msg.includes("503") || msg.includes("Server Error")) {
+            msg = "Servicios saturados. Espera un momento.";
+        } else if (msg.includes("not found") || msg.includes("404")) {
+            msg = "Modelo Gemini no disponible.";
+        }
         sendMessageToContentScript(tabId, { action: "showError", message: msg });
       }
   });
+}
+
+// FETCH CON BACKOFF (Solo para Gemini)
+async function fetchWithBackoff(url, payload, retries = MAX_RETRIES, delay = BASE_DELAY) {
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok && (response.status === 429 || response.status >= 500)) {
+            throw new Error(`Server Error ${response.status}`);
+        }
+        return response; 
+    } catch (error) {
+        if (retries > 0) {
+            await new Promise(resolve => setTimeout(resolve, delay));
+            return fetchWithBackoff(url, payload, retries - 1, delay * 2);
+        }
+        throw error; 
+    }
 }
 
 function sendMessageToContentScript(tabId, message) {
