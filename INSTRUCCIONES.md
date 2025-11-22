@@ -1,4 +1,4 @@
-# Instrucciones de Instalación y Uso
+# ℹ️ Instrucciones de Instalación y Uso
 
 Sigue estos pasos para instalar la extensión "Resumen IA de Pantalla" en tu navegador Google Chrome (o navegadores basados en Chromium como Edge o Brave).
 
@@ -51,5 +51,5 @@ Navega a la web que quieras analizar y tienes dos formas de activarla:
 ### Usar la Ventana
 * **Escribir:** Escribe tu duda en el recuadro.
 * **Prompts:** Usa el menú desplegable de arriba para elegir instrucciones pre-cargadas (ej: C++, Señales).
-* **Minimizar:** Si la respuesta tarda o quieres ver la pantalla, toca el guion (`-`) arriba a la derecha. La ventana se convertirá en una burbuja blanca flotante.
+* ** Minimizar:** Si la respuesta tarda o quieres ver la pantalla, toca el guion (`-`) arriba a la derecha. La ventana se convertirá en una burbuja blanca flotante.
 * **Fijar:** Toca el pin (📌) para que la ventana no se cierre si haces clic fuera de ella.
