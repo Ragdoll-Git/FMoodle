@@ -3,8 +3,8 @@
 
 Extensión de Chrome para uso personal que captura la pantalla actual, la analiza con **Google Gemini** y permite realizar consultas técnicas, resúmenes o extracción de código.
 
-**Versión Actual:** 2.5 (Post-Migration Patch)
-**Modelos:** Gemini 2.5 Flash (con fallback automático a Gemini 2.5 Flash Lite).
+* **Versión Actual:** 2.5 (Post-Migration Patch)
+* **Modelos:** Gemini 2.5 Flash (con fallback automático a Gemini 2.5 Flash Lite).
 
 ## ✨ Características Principales
 
@@ -20,11 +20,11 @@ Extensión de Chrome para uso personal que captura la pantalla actual, la analiz
 * **📝 Prompts Predefinidos:** Menú desplegable con instrucciones técnicas (ej: "Programación C/C++", "Tratamiento de Señales").
 * **⚙️ Configuración Segura (BYOK):** La API Key se gestiona desde el menú de Opciones y se guarda en el navegador.
 
-## � Instalación y Uso
+## ℹ️ Instalación y Uso
 
-Para obtener la API Key, instalar y configurar la extensión, sigue las [**Instrucciones detalladas (clic aquí)**](./INSTRUCCIONES.md).
+Para obtener la API Key, instalar y configurar la extensión, sigue las [**`INSTRUCCIONES.md (clic aquí)`**](./INSTRUCCIONES.md).
 
-## �🛠️ Estructura y Cambios Técnicos
+## 🛠️ Estructura y Cambios Técnicos
 
 Para que la extensión funcione, la carpeta debe contener estos archivos obligatorios:
 
