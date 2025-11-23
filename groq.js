@@ -15,7 +15,7 @@ export async function askGroq(question, base64Image, apiKey) {
             }
         ],
         temperature: 0.7,
-        max_tokens: 1024
+        max_tokens: 4000
     };
 
     try {
