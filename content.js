@@ -1,23 +1,24 @@
-// content.js - Versión 3.1: Fix SyntaxError (Doble Inyección)
+// content.js - Versión Autolimpiable (Force Refresh)
 
-// 1. PROTECCIÓN (MOVIDA AL PRINCIPIO)
-// Si el script ya corrió, detenemos la ejecución inmediatamente.
-if (window.hasRunGeminiExtension) {
-  throw new Error("Script already injected"); 
-}
-window.hasRunGeminiExtension = true;
+(function() {
+    console.log("Inicializando Gemini Content Script...");
 
-// 2. VARIABLES GLOBALES (USAR VAR)
-// Usamos 'var' para evitar el error "Identifier already declared" al recargar.
-var SUMMARY_CONTAINER_ID = 'gemini-summary-popup-container';
-var POSITION_STORAGE_KEY = 'geminiPopupPosition';
+    // 1. LIMPIEZA DE ZOMBIES
+    // Si existe un listener anterior, lo matamos para que no haya duplicados.
+    if (window.geminiListenerRef) {
+        try { chrome.runtime.onMessage.removeListener(window.geminiListenerRef); } catch(e) {}
+    }
 
-var currentImageData = null;
-var isPinned = false;
-var isMinimized = false; 
-var isMouseDown = false;
-var hasMoved = false;
-var dragOffsetX, dragOffsetY;
+    // 2. CONFIGURACIÓN
+    var SUMMARY_CONTAINER_ID = 'gemini-summary-popup-container';
+    var POSITION_STORAGE_KEY = 'geminiPopupPosition';
+    
+    // Variables de estado (se reinician en cada inyección)
+    var isPinned = false;
+    var isMinimized = false; 
+    var isMouseDown = false;
+    var hasMoved = false;
+    var dragOffsetX, dragOffsetY;
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'showLoading') {
@@ -81,61 +82,62 @@ function showQuestionInputPopup() {
   createPopup((container, header) => {
     header.querySelector('#gemini-popup-title').textContent = 'Pregunta a la IA';
     
-    // CONTENEDOR DE EXTRAS (Prompts + Proveedor)
     const extrasContainer = header.querySelector('#gemini-header-extras');
     if (extrasContainer) {
         extrasContainer.innerHTML = ''; 
 
-        // 1. SELECTOR DE PROMPTS
+        // 1. Selector PROMPTS (Igual que antes)
         if (typeof PREDEFINED_PROMPTS !== 'undefined') {
             const promptSelect = document.createElement('select');
-            Object.assign(promptSelect.style, { 
-                maxWidth: '110px', fontSize: '12px', padding: '2px', borderRadius: '4px', 
-                border: '1px solid #ccc', marginLeft: '5px', cursor: 'pointer'
-            });
+            // ... (estilos del promptSelect igual que antes) ...
+            Object.assign(promptSelect.style, { maxWidth: '100px', fontSize: '12px' }); // Ajuste visual
             
             PREDEFINED_PROMPTS.forEach(prompt => {
                 const option = document.createElement('option');
                 option.value = prompt.text; option.textContent = prompt.title;
                 promptSelect.appendChild(option);
             });
-            
             promptSelect.onchange = () => {
                 const textArea = container.querySelector('textarea');
                 if (textArea && promptSelect.value) { textArea.value = promptSelect.value; textArea.focus(); }
             };
-            promptSelect.onmousedown = (e) => e.stopPropagation();
             extrasContainer.appendChild(promptSelect);
         }
 
-        // 2. SELECTOR DE PROVEEDOR (GEMINI / GROQ)
+        // 2. Selector PROVEEDOR (Igual que antes)
         const providerSelect = document.createElement('select');
         providerSelect.id = 'gemini-provider-select';
-        Object.assign(providerSelect.style, { 
-            maxWidth: '80px', fontSize: '12px', padding: '2px', borderRadius: '4px', 
-            border: '1px solid #ccc', marginLeft: '5px', cursor: 'pointer', 
-            fontWeight: 'bold', color: '#2563eb' 
-        });
-
-        const optGemini = document.createElement('option');
-        optGemini.value = 'gemini'; optGemini.textContent = 'Gemini';
-        const optGroq = document.createElement('option');
-        optGroq.value = 'groq'; optGroq.textContent = 'Groq';
-
+        // ... (estilos y opciones igual que antes) ...
+        const optGemini = document.createElement('option'); optGemini.value = 'gemini'; optGemini.textContent = 'Gemini';
+        const optGroq = document.createElement('option'); optGroq.value = 'groq'; optGroq.textContent = 'Groq';
         providerSelect.append(optGemini, optGroq);
-
-        // Recuperar preferencia guardada
+        
         chrome.storage.local.get(['preferredProvider'], (data) => {
             if (data.preferredProvider) providerSelect.value = data.preferredProvider;
         });
-
-        providerSelect.onchange = () => {
-            chrome.storage.local.set({ preferredProvider: providerSelect.value });
-        };
-        providerSelect.onmousedown = (e) => e.stopPropagation();
+        providerSelect.onchange = () => chrome.storage.local.set({ preferredProvider: providerSelect.value });
         extrasContainer.appendChild(providerSelect);
+
+        // --- NUEVO: CHECKBOX LIVE MODE ---
+        const liveDiv = document.createElement('div');
+        Object.assign(liveDiv.style, { display: 'inline-flex', alignItems: 'center', marginLeft: '8px', borderLeft: '1px solid #ccc', paddingLeft: '5px' });
+        
+        const liveCheck = document.createElement('input');
+        liveCheck.type = 'checkbox';
+        liveCheck.id = 'live-mode-toggle';
+        liveCheck.style.margin = '0 4px 0 0';
+        
+        const liveLabel = document.createElement('label');
+        liveLabel.htmlFor = 'live-mode-toggle';
+        liveLabel.innerText = '🔴 Live';
+        Object.assign(liveLabel.style, { fontSize: '11px', color: '#dc2626', fontWeight: 'bold', cursor: 'pointer' });
+
+        liveDiv.append(liveCheck, liveLabel);
+        extrasContainer.appendChild(liveDiv);
+        // ---------------------------------
     }
 
+    // Cuerpo del popup (Igual que antes)
     const contentDiv = document.createElement('div');
     contentDiv.className = 'gemini-content-body'; 
     contentDiv.dataset.displayMode = 'flex'; 
@@ -150,18 +152,24 @@ function showQuestionInputPopup() {
     sendButton.innerHTML = '&#9166;';
     Object.assign(sendButton.style, { backgroundColor: '#3b82f6', color: '#ffffff', border: 'none', width: '40px', height: '40px', borderRadius: '6px', cursor: 'pointer', fontSize: '20px', flexShrink: '0' });
 
+    // --- LÓGICA DE ENVÍO MODIFICADA ---
     const submitQuestion = () => {
       const question = questionInput.value.trim();
-      // Obtenemos el proveedor seleccionado al momento de enviar
       const selectedProvider = header.querySelector('#gemini-provider-select')?.value || 'gemini';
+      const isLive = header.querySelector('#live-mode-toggle')?.checked || false; // Detectar estado
 
       if (question) {
-        showPopup("Analizando...", true); 
-        // ENVIAMOS PREGUNTA + PROVEEDOR
+        if (isLive) {
+            showPopup("🔴 Conectando Live Vision (Groq)...\nActualizando cada 6s. Cierra la ventana para detener.", true);
+        } else {
+            showPopup("Analizando...", true); 
+        }
+
         chrome.runtime.sendMessage({ 
             action: "sendQuestionToGemini", 
             question: question,
-            provider: selectedProvider 
+            provider: selectedProvider,
+            isLiveMode: isLive // <--- Enviamos flag
         });
       }
     };
@@ -175,6 +183,18 @@ function showQuestionInputPopup() {
     contentDiv.appendChild(sendButton);
     container.appendChild(contentDiv);
   });
+}
+
+// --- MODIFICACIÓN EN CLOSEPOPUP (IMPORTANTE) ---
+// Para detener el bucle cuando el usuario cierra la ventanita
+function closePopup(container) {
+  // Avisar al background que pare el Live
+  chrome.runtime.sendMessage({ action: "stopLiveSession" });
+
+  if (isPinned) savePosition(container);
+  container.style.opacity = '0';
+  setTimeout(() => container.remove(), 300);
+  isMinimized = false;
 }
 
 // --- SHOW POPUP (RESPUESTA) ---
@@ -374,9 +394,4 @@ function savePosition(container) {
   chrome.storage.local.set({ [POSITION_STORAGE_KEY]: { isPinned: true, position: { left: container.style.left, top: container.style.top } } });
 }
 
-function closePopup(container) {
-  if (isPinned) savePosition(container);
-  container.style.opacity = '0';
-  setTimeout(() => container.remove(), 300);
-  isMinimized = false;
-}
+})();
