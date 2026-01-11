@@ -4,57 +4,51 @@ Sigue estos pasos para instalar y configurar la extensión con soporte para múl
 
 ## 1. Requisitos Previos
 
-Asegúrate de tener la carpeta de la extensión con los siguientes **8 archivos** (se agregó uno nuevo) y la carpeta de imágenes:
-
-1.  `manifest.json`
-2.  `background.js`
-3.  `groq.js` (**Nuevo**: Archivo de lógica Groq)
-4.  `content.js`
-5.  `prompts.js`
-6.  `options.html`
-7.  `options.js`
-8.  `Carpeta /images/` (con los iconos)
+Asegúrate de tener la carpeta de la extensión descargada.
 
 ## 2. Obtener tus Claves (API Keys)
 
-Ahora puedes usar dos "cerebros". Te recomendamos configurar ambos para tener siempre un respaldo.
-
 ### A. Google Gemini (Principal)
-1.  Ve a [Google AI Studio](https://aistudio.google.com/app/apikey).
-2.  Inicia sesión y haz clic en **"Create API key"**.
-3.  Copia la clave (empieza con `AIzaSy...`).
 
-### B. Groq Cloud (Opcional / Respaldo)
-1.  Ve a [Groq Console](https://console.groq.com/keys).
-2.  Inicia sesión y ve a la sección **API Keys**.
-3.  Haz clic en **"Create API Key"**.
-4.  Ponle un nombre (ej: `ChromeExt`) y copia la clave (empieza con `gsk_...`).
+1. Ve a [Google AI Studio](https://aistudio.google.com/app/apikey).
+2. Inicia sesión y crea una API Key.
+3. **Nota:** Esta key te dará acceso automático a **Gemini 3.0 Preview** y **Gemini 2.5**. No necesitas configurar nada extra.
+
+### B. Groq Cloud (Respaldo Recomendado)
+
+1. Ve a [Groq Console](https://console.groq.com/keys).
+2. Crea una API Key para tener un respaldo ultrarrápido si Google se satura.
 
 ## 3. Instalar en Chrome
 
-1.  Abre Chrome y ve a: `chrome://extensions`.
-2.  Activa el **"Modo de desarrollador"** (arriba a la derecha).
-3.  Haz clic en **"Cargar descomprimida"** (Load unpacked).
-4.  Selecciona la carpeta de la extensión.
+1. Abre Chrome y ve a: `chrome://extensions`.
+2. Activa el **"Modo de desarrollador"**.
+3. Haz clic en **"Cargar descomprimida"** (Load unpacked).
+4. Selecciona la carpeta de la extensión.
 
 ## 4. Configurar las Claves
 
-1.  Busca el icono de la extensión (💼) en la barra de Chrome.
-2.  Haz **Click Derecho** sobre el icono y elige **"Opciones"**.
-3.  Verás dos casilleros:
+1. Busca el icono de la extensión (💼) en la barra de Chrome.
+2. Haz **Click Derecho** sobre el icono y elige **"Opciones"**.
+3. Verás dos casilleros:
     * **Google Gemini:** Pega tu clave `AIzaSy...`
     * **Groq Cloud:** Pega tu clave `gsk_...`
-4.  Dale a **Guardar**. ¡Listo!
+4. Dale a **Guardar**. ¡Listo!
 
 ## 5. Cómo Usar
 
 ### Capturar Pantalla
+
 * Atajo: `Alt + Shift + Z`.
 * O click derecho: "Preguntar a la IA sobre esta pantalla".
 
-### Elegir tu IA (Nuevo)
-En la ventana que aparece, verás un selector azul pequeño arriba a la derecha (junto a los Prompts):
-* **Gemini:** Usará los modelos de Google (Flash 2.5).
-* **Groq:** Usará el modelo Llama 4 Scout (¡Muy rápido!).
+### La Inteligencia Automática
 
-Si uno falla o está lento, ¡simplemente cambia al otro en el selector y vuelve a enviar!
+Por defecto, la extensión intentará usar el mejor modelo disponible:
+
+1. **Gemini 3.0 Flash Preview** (El más inteligente).
+2. Si falla, baja a **Gemini 2.5 Flash**.
+3. Si falla, baja a **Groq**.
+
+Tú solo preocupate de preguntar, la extensión se encarga de buscar quien responda mejor.
+Puedes forzar el uso de Groq desde el selector en la ventana de chat si lo prefieres para casos de velocidad extrema.
