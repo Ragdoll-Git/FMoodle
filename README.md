@@ -1,8 +1,8 @@
 # 📸 Resumen IA de Pantalla
 
-### (Versión Local - Multi-Provider Edition)
+## 📦 (Versión Local - Multi-Model Edition)
 
-Extensión de Chrome para uso personal que captura la pantalla actual y permite elegir entre **Google Gemini** o **Groq (Llama 4)** para realizar consultas técnicas, resúmenes o extracción de código.
+Extensión de Chrome para uso personal que captura la pantalla actual y permite elegir entre **Google Gemini (3.0 Flash Preview/2.5 Flash)** o **Groq (Llama 4)** para realizar consultas técnicas, resúmenes o extracción de código.
 
 * **Versión Actual:** 3.2.0 (Gemini 3.0 Preview + Robust Fallback)
 * **Arquitectura:** Multi-Modelo con sistema de respaldo triple.
@@ -12,11 +12,8 @@ Extensión de Chrome para uso personal que captura la pantalla actual y permite 
 * **🧠 Inteligencia Adaptativa (Nuevo):**
   * **Principal:** **Gemini 3.0 Flash Preview**. Alta precisión y razonamiento.
   * **Respaldo Automático:** Si Google falla, salta instantáneamente a **Gemini 2.5 Flash**, luego a **Lite**, y finalmente a **Groq**.
-  * **Selector en Vivo:** Elige tu proveedor preferido (Google/Groq) desde el popup.
-* **🚀 Optimización de Rendimiento:**
-  * **Keep-Alive Heartbeat:** Mantiene vivo el proceso durante generaciones largas (evita cortes).
-  * **Cero Latencia de Imagen (Zero-Copy):** Procesamiento en segundo plano sin transferencias innecesarias.
-* **📸 Captura Instantánea:** Atajo `Alt+Shift+Z` o Click Derecho.
+  * **Selector en Vivo:** Elige tu modelo preferido (Google/Groq) desde el popup.
+* **📸 Captura Instantánea:** Atajo `Alt+Shift+Z`.
 * **💬 Interfaz Avanzada:**
   * Modos: Ventana Flotante, Pin Mode (📌) y Burbuja Minimizada.
   * Prompts Predefinidos: Menú para instrucciones técnicas rápidas.
