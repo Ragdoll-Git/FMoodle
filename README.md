@@ -10,7 +10,7 @@ Extensión de Chrome para uso personal que captura la pantalla actual y permite 
 
 para realizar consultas técnicas, resúmenes o extracción de código.
 
-- **Versión Actual:** 3.3.0 (*OpenAI Support)
+- **Versión Actual:** 3.3.0 (*OpenAI Support*)
 - **Arquitectura:** Multi-Modelo con sistema de respaldo (*para errores de saturación (500) y couta excedida (429)*).
 
 ## ✨ Características Principales
