@@ -55,14 +55,14 @@ La extensión opera como un Módulo ES6 con **8 archivos clave**:
 
 ## 📜 Historial de Versiones
 
-### v3.3.0 - La Actualización "OpenAI"
+### v3.3.0 - La Actualización "OpenAI" (Actual)
 
 - **Nuevo Proveedor:** Soporte completo para **ChatGPT (GPT-5)**.
 - **UI Revamp:** Diseño de opciones centrado y estilizado con fondos dinámicos.
 - **Fallback Inteligente:** El sistema ahora detecta el error "Cuota Excedida" (429) y salta automáticamente de Gemini 3.0 -> 2.5 -> Lite, maximizando el uso gratuito.
 - **Configuración:** Opción para guardar clave de OpenAI.
 
-### v3.2.0 - La Actualización "Gemini 3" (Actual)
+### v3.2.0 - La Actualización "Gemini 3"
 
 - **Motor:** Actualizado a **Gemini 3.0 Flash Preview**.
 - **Estabilidad:** Eliminado el "Modo Live" para reducir complejidad y fallos.
