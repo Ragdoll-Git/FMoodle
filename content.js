@@ -123,7 +123,8 @@
         // ... (estilos y opciones igual que antes) ...
         const optGemini = document.createElement('option'); optGemini.value = 'gemini'; optGemini.textContent = 'Gemini';
         const optGroq = document.createElement('option'); optGroq.value = 'groq'; optGroq.textContent = 'Groq';
-        providerSelect.append(optGemini, optGroq);
+        const optOpenAI = document.createElement('option'); optOpenAI.value = 'openai'; optOpenAI.textContent = 'ChatGPT';
+        providerSelect.append(optGemini, optGroq, optOpenAI);
 
         chrome.storage.local.get(['preferredProvider'], (data) => {
           if (data.preferredProvider) providerSelect.value = data.preferredProvider;
@@ -131,8 +132,6 @@
         providerSelect.onchange = () => chrome.storage.local.set({ preferredProvider: providerSelect.value });
         extrasContainer.appendChild(providerSelect);
       }
-
-
 
       // Cuerpo del popup (Igual que antes)
       const contentDiv = document.createElement('div');

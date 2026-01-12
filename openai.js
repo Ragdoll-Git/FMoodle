@@ -1,16 +1,15 @@
-// groq.js - Actualizado a Llama 4 Scout
-export async function askGroq(question, base64Image, apiKey) {
-    const url = "https://api.groq.com/openai/v1/chat/completions";
+// openai.js - Support for OpenAI (ChatGPT)
+export async function askOpenAI(question, base64Image, apiKey) {
+    const url = "https://api.openai.com/v1/chat/completions";
 
     const payload = {
-        // CAMBIO IMPORTANTE: Nuevo ID oficial de Llama 4 Scout (Vision)
-        model: "meta-llama/llama-4-scout-17b-16e-instruct",
+        model: "gpt-5",
         messages: [
             {
                 role: "user",
                 content: [
                     { type: "text", text: question },
-                    { type: "image_url", image_url: { url: `data:image/png;base64,${base64Image}` } }
+                    { type: "image_url", image_url: { url: `data:image/jpeg;base64,${base64Image}` } }
                 ]
             }
         ],
@@ -30,19 +29,18 @@ export async function askGroq(question, base64Image, apiKey) {
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            // Mejora: Mostramos el código de error para debug (ej: model_decommissioned)
-            throw new Error(errorData.error?.message || `Groq Error ${errorData.error?.code || response.status}`);
+            throw new Error(errorData.error?.message || `OpenAI Error ${response.status}`);
         }
 
         const result = await response.json();
         const answer = result.choices[0]?.message?.content;
 
-        if (!answer) throw new Error("Respuesta vacía de Groq");
+        if (!answer) throw new Error("Respuesta vacía de OpenAI");
 
-        return { success: true, text: answer, model: "Llama 4 Scout" };
+        return { success: true, text: answer, model: "ChatGPT (GPT-5)" };
 
     } catch (error) {
-        console.error("Error en Groq Service:", error);
+        console.error("Error en OpenAI Service:", error);
         return { success: false, error: error.message };
     }
 }

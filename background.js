@@ -1,5 +1,6 @@
 // background.js - Versión 3.2 (Arquitectura Ping-Pong)
 import { askGroq } from './groq.js';
+import { askOpenAI } from './openai.js';
 
 const GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/";
 
@@ -83,6 +84,17 @@ async function processQuestionRouter(tabId, question, provider = 'gemini') {
         });
         return;
     }
+
+    if (provider === 'openai') {
+        chrome.storage.sync.get(['OPENAI_API_KEY'], async (items) => {
+            if (!items.OPENAI_API_KEY) { sendMessageToContentScript(tabId, { action: "showError", message: "Falta OpenAI API Key." }); return; }
+            const result = await askOpenAI(question, base64ImageData, items.OPENAI_API_KEY);
+            delete temporaryScreenshots[tabId];
+            result.success ? sendMessageToContentScript(tabId, { action: "showSummary", summary: result.text, model: result.model })
+                : sendMessageToContentScript(tabId, { action: "showError", message: result.error });
+        });
+        return;
+    }
     processQuestionWithGeminiOriginal(tabId, question, base64ImageData);
 }
 
@@ -107,10 +119,18 @@ async function processQuestionWithGeminiOriginal(tabId, question, base64) {
             let r = await fetchWithBackoff(`${GEMINI_BASE_URL}gemini-3-flash-preview:generateContent?key=${k}`, p);
 
             // 2. Fallback a Gemini 2.5 Flash
-            if (!r.ok && r.status >= 500) {
-                console.log("Fallo Gemini 3 Preview, intentando 2.5...");
+            // Ahora también salta si da error 429 (Cuota excedida) para aprovechar los 20 usos del otro modelo
+            if (!r.ok && (r.status >= 500 || r.status === 429)) {
+                console.log(`Fallo Gemini 3 (Status ${r.status}), intentando 2.5...`);
                 responseModel = "Gemini 2.5 Flash";
                 r = await fetchWithBackoff(`${GEMINI_BASE_URL}gemini-2.5-flash:generateContent?key=${k}`, p);
+            }
+
+            // 3. Fallback a Gemini 2.5 Flash Lite
+            if (!r.ok && (r.status >= 500 || r.status === 429)) {
+                console.log(`Fallo Gemini 2.5 (Status ${r.status}), intentando Lite...`);
+                responseModel = "Gemini 2.5 Lite";
+                r = await fetchWithBackoff(`${GEMINI_BASE_URL}gemini-2.5-flash-lite:generateContent?key=${k}`, p);
             }
 
             if (!r.ok) throw new Error((await r.json()).error?.message || "Error Gemini");
