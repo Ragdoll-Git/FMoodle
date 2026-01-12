@@ -21,6 +21,11 @@ Descargar la extension desde el archivo .zip de GitHub.
 1. Ve a [Groq Console](https://console.groq.com/keys).
 2. Crea una API Key para tener un respaldo si Google se satura.
 
+### C. OpenAI (Opcional)
+
+1. Ve a [OpenAI Platform](https://platform.openai.com/api-keys).
+2. Crea una API Key si tienes créditos disponibles (requiere pago por uso).
+
 ## 3. Instalar en Chrome
 
 1. Abre Chrome y ve a: `chrome://extensions`.
@@ -36,6 +41,7 @@ Descargar la extension desde el archivo .zip de GitHub.
 3. Verás dos casilleros:
     * **Google Gemini:** Pega tu clave `AIzaSy...`
     * **Groq Cloud:** Pega tu clave `gsk_...`
+    * **OpenAI:** Pega tu clave `sk-...`
 4. Dale a **Guardar**. ¡Listo!
 
 ## 5. Cómo Usar
