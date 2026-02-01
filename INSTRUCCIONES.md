@@ -26,6 +26,12 @@ Descargar la extension desde el archivo .zip de GitHub.
 1. Ve a [OpenAI Platform](https://platform.openai.com/api-keys).
 2. Crea una API Key si tienes créditos disponibles (requiere pago por uso).
 
+### D. Anthropic Claude (Opcional - Recomendado)
+
+1. Ve a [Anthropic Console](https://console.anthropic.com/settings/keys).
+2. Crea una API Key (requiere créditos pre-pagados).
+3. Clave para usar el modelo **Claude 3.5 Sonnet**.
+
 ## 3. Instalar en Chrome
 
 1. Abre Chrome y ve a: `chrome://extensions`.
@@ -42,6 +48,7 @@ Descargar la extension desde el archivo .zip de GitHub.
     * **Google Gemini:** Pega tu clave `AIzaSy...`
     * **Groq Cloud:** Pega tu clave `gsk_...`
     * **OpenAI:** Pega tu clave `sk-...`
+    * **Anthropic:** Pega tu clave `sk-ant-...`
 4. Dale a **Guardar**. ¡Listo!
 
 ## 5. Cómo Usar
