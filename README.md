@@ -5,12 +5,13 @@
 Extensión de Chrome para uso personal que captura la pantalla actual y permite elegir entre:
 
 - **Google Gemini** *(3.0 Flash Preview / 2.5 Flash / 2.5 Flash Lite)*
+- **Claude** *(Claude 3.5 Sonnet)*
 - **ChatGPT** *(GPT-5)*
 - **Groq** *(Llama 4 Scout)*
 
 para realizar consultas técnicas, resúmenes o extracción de código.
 
-- **Versión Actual:** 3.3.0 (*OpenAI Support*)
+- **Versión Actual:** 3.4.0 (*Claude Support*)
 - **Arquitectura:** Multi-Modelo con sistema de respaldo (*para errores de saturación (500) y couta excedida (429)*).
 
 ## ✨ Características Principales
@@ -18,7 +19,8 @@ para realizar consultas técnicas, resúmenes o extracción de código.
 - **🧠 Inteligencia Adaptativa:**
   - **Principal:** **Gemini 3.0 Flash Preview**. Alta precisión y razonamiento.
   - **Respaldo Automático:** 3.0 -> 2.5 Flash -> 2.5 Lite -> Groq. (Incluye soporte para error de Cuota 429).
-  - **Selector en Vivo:** Elige tu modelo preferido (Gemini / ChatGPT / Groq) desde el popup.
+  - **Selector en Vivo:** Elige tu modelo preferido (Gemini / Claude / ChatGPT / Groq) desde el popup.
+- **🧠 Soporte Anthropic:** Integración con **Claude 3.5 Sonnet** para razonamiento avanzado.
 - **🤖 Soporte OpenAI:** Integración oficial con ChatGPT (GPT-5).
 - **📸 Captura Instantánea:** Atajo `Alt+Shift+Z`.
 - **💬 Interfaz Avanzada:**
@@ -55,7 +57,13 @@ La extensión opera como un Módulo ES6 con **8 archivos clave**:
 
 ## 📜 Historial de Versiones
 
-### v3.3.0 - La Actualización "OpenAI" (Actual)
+### v3.4.0 - La Actualización "Claude" (Actual)
+
+- **Nuevo Proveedor:** Soporte para **Claude 3.5 Sonnet** (Anthropic).
+- **Core Fix:** Solucionado error crítico en headers (`Latin-1`) al copiar API Keys con caracteres invisibles.
+- **Ajustes:** Temperatura de Groq ajustada a 0.27 para respuestas más precisas.
+
+### v3.3.0 - La Actualización "OpenAI"
 
 - **Nuevo Proveedor:** Soporte completo para **ChatGPT (GPT-5)**.
 - **UI Revamp:** Diseño de opciones centrado y estilizado con fondos dinámicos.
