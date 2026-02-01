@@ -1,6 +1,7 @@
 // background.js - Versión 3.2 (Arquitectura Ping-Pong)
 import { askGroq } from './groq.js';
 import { askOpenAI } from './openai.js';
+import { askClaude } from './claude.js';
 
 const GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/";
 
@@ -95,10 +96,20 @@ async function processQuestionRouter(tabId, question, provider = 'gemini') {
         });
         return;
     }
+
+    if (provider === 'claude') {
+        chrome.storage.sync.get(['CLAUDE_API_KEY'], async (items) => {
+            if (!items.CLAUDE_API_KEY) { sendMessageToContentScript(tabId, { action: "showError", message: "Falta Claude API Key." }); return; }
+            const result = await askClaude(question, base64ImageData, items.CLAUDE_API_KEY);
+            delete temporaryScreenshots[tabId];
+            result.success ? sendMessageToContentScript(tabId, { action: "showSummary", summary: result.text, model: result.model })
+                : sendMessageToContentScript(tabId, { action: "showError", message: result.error });
+        });
+        return;
+    }
+
     processQuestionWithGeminiOriginal(tabId, question, base64ImageData);
 }
-
-
 
 // 7. GEMINI LEGACY
 async function processQuestionWithGeminiOriginal(tabId, question, base64) {

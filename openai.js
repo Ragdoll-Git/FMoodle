@@ -21,7 +21,7 @@ export async function askOpenAI(question, base64Image, apiKey) {
         const response = await fetch(url, {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${apiKey}`,
+                'Authorization': `Bearer ${apiKey.replace(/[^\x00-\x7F]/g, "").trim()}`,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(payload)

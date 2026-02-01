@@ -124,7 +124,8 @@
         const optGemini = document.createElement('option'); optGemini.value = 'gemini'; optGemini.textContent = 'Gemini';
         const optGroq = document.createElement('option'); optGroq.value = 'groq'; optGroq.textContent = 'Groq';
         const optOpenAI = document.createElement('option'); optOpenAI.value = 'openai'; optOpenAI.textContent = 'ChatGPT';
-        providerSelect.append(optGemini, optGroq, optOpenAI);
+        const optClaude = document.createElement('option'); optClaude.value = 'claude'; optClaude.textContent = 'Claude';
+        providerSelect.append(optGemini, optGroq, optOpenAI, optClaude);
 
         chrome.storage.local.get(['preferredProvider'], (data) => {
           if (data.preferredProvider) providerSelect.value = data.preferredProvider;
