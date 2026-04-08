@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
   "name": "Resumen IA de Pantalla",
-  "version": "3.0",
-  "version_name": "Multimodal",
-  "description": "Toma una captura de pantalla, la envía a Gemini o Groq y muestra un resumen.",
+  "version": "3.5.0",
+  "version_name": "Custom Prompts",
+  "description": "Captura pantalla y consulta a múltiples IAs (Gemini, Groq, ChatGPT, Claude).",
   "permissions": [
     "activeTab",
     "contextMenus",

@@ -10,7 +10,7 @@
       padding: 40px 24px;
       margin: 0;
       width: 100%;
-      height: 100vh;
+      min-height: 100vh;
       color: #1f2937;
       background-color: #f9fafb;
       box-sizing: border-box;
@@ -18,21 +18,18 @@
       flex-direction: column;
       align-items: center;
       justify-content: flex-start;
-      /* Superior */
       text-align: center;
-      /* Texto centrado */
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
     }
 
-    /* Contenedor semi-transparente para legibilidad */
     .container {
       background-color: rgba(255, 255, 255, 0.95);
       padding: 30px;
       border-radius: 12px;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      max-width: 320px;
+      max-width: 480px;
       width: 100%;
     }
 
@@ -99,6 +96,95 @@
       min-height: 20px;
       font-weight: 600;
     }
+
+    /* === Prompts Section === */
+    .section-divider {
+      margin: 28px 0 20px 0;
+      border: none;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .prompt-card {
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 12px;
+      padding-right: 40px;
+      margin-bottom: 10px;
+      position: relative;
+      text-align: left;
+    }
+
+    .prompt-card input {
+      text-align: left;
+      font-weight: 600;
+      font-size: 13px;
+      margin-bottom: 6px;
+      padding: 6px 8px;
+    }
+
+    .prompt-card textarea {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: inherit;
+      resize: vertical;
+      min-height: 60px;
+      outline: none;
+      text-align: left;
+    }
+
+    .prompt-card textarea:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+
+    .delete-prompt {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: #ef4444 !important;
+      color: white;
+      border: none;
+      width: 24px !important;
+      height: 24px;
+      min-width: 24px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 12px;
+      padding: 0 !important;
+      margin: 0 !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+
+    .delete-prompt:hover {
+      background: #dc2626 !important;
+    }
+
+    .btn-add {
+      background: #10b981 !important;
+      margin-top: 10px !important;
+    }
+
+    .btn-add:hover {
+      background: #059669 !important;
+    }
+
+    #promptsContainer:empty::after {
+      content: 'No hay prompts. Hacé clic en "+ Agregar Prompt" para crear uno.';
+      display: block;
+      text-align: center;
+      color: #9ca3af;
+      font-size: 13px;
+      padding: 20px;
+      font-style: italic;
+    }
   </style>
 </head>
 
@@ -121,6 +207,15 @@
     <h4>Anthropic (Claude)</h4>
     <p>Para modelo Claude 3.5 Sonnet</p>
     <input type="password" id="claudeApiKey" placeholder="Ej: sk-ant-..." />
+
+    <hr class="section-divider">
+
+    <h3>Prompts Predefinidos</h3>
+    <p>Gestiona los prompts que aparecen en el selector de la ventana de consulta.</p>
+
+    <div id="promptsContainer"></div>
+
+    <button type="button" id="addPrompt" class="btn-add">+ Agregar Prompt</button>
 
     <button id="save">Guardar Cambios</button>
     <div id="status" class="status"></div>

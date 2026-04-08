@@ -11,7 +11,7 @@ Extensión de Chrome para uso personal que captura la pantalla actual y permite 
 
 para realizar consultas técnicas, resúmenes o extracción de código.
 
-- **Versión Actual:** 3.4.0 (*Claude Support*)
+- **Versión Actual:** 3.5.0 (*Custom Prompts*)
 - **Arquitectura:** Multi-Modelo con sistema de respaldo (*para errores de saturación (500) y couta excedida (429)*).
 
 ## ✨ Características Principales
@@ -57,7 +57,14 @@ La extensión opera como un Módulo ES6 con **8 archivos clave**:
 
 ## 📜 Historial de Versiones
 
-### v3.4.0 - La Actualización "Claude" (Actual)
+### v3.5.0 - La Actualización "Custom Prompts" (Actual)
+
+- **Prompts Editables:** Los prompts predefinidos ahora se gestionan desde la página de Opciones. Se pueden agregar, editar y eliminar.
+- **Robustez:** Implementación de `fetchWithRetry` con reintentos y backoff exponencial en todas las llamadas a Gemini.
+- **Fallback Universal:** Si falla cualquier proveedor (Claude, ChatGPT), el sistema intenta Groq como respaldo.
+- **Versionado:** Sincronización de versión en manifest, README y código.
+
+### v3.4.0 - La Actualización "Claude"
 
 - **Nuevo Proveedor:** Soporte para **Claude 3.5 Sonnet** (Anthropic).
 - **Core Fix:** Solucionado error crítico en headers (`Latin-1`) al copiar API Keys con caracteres invisibles.

@@ -99,23 +99,29 @@
       if (extrasContainer) {
         extrasContainer.innerHTML = '';
 
-        // 1. Selector PROMPTS (Igual que antes)
-        if (typeof PREDEFINED_PROMPTS !== 'undefined') {
-          const promptSelect = document.createElement('select');
-          // ... (estilos del promptSelect igual que antes) ...
-          Object.assign(promptSelect.style, { maxWidth: '100px', fontSize: '12px' }); // Ajuste visual
+        // 1. Selector PROMPTS (desde Storage o defaults)
+        const promptSelect = document.createElement('select');
+        Object.assign(promptSelect.style, { maxWidth: '120px', fontSize: '12px' });
 
-          PREDEFINED_PROMPTS.forEach(prompt => {
+        const defaultOpt = document.createElement('option');
+        defaultOpt.value = ''; defaultOpt.textContent = 'Prompt...';
+        promptSelect.appendChild(defaultOpt);
+
+        chrome.storage.sync.get(['CUSTOM_PROMPTS'], (data) => {
+          const prompts = data.CUSTOM_PROMPTS || (typeof PREDEFINED_PROMPTS !== 'undefined' ? PREDEFINED_PROMPTS.filter(p => p.text) : []);
+          prompts.forEach(prompt => {
+            if (!prompt.text) return;
             const option = document.createElement('option');
             option.value = prompt.text; option.textContent = prompt.title;
             promptSelect.appendChild(option);
           });
-          promptSelect.onchange = () => {
-            const textArea = container.querySelector('textarea');
-            if (textArea && promptSelect.value) { textArea.value = promptSelect.value; textArea.focus(); }
-          };
-          extrasContainer.appendChild(promptSelect);
-        }
+        });
+
+        promptSelect.onchange = () => {
+          const textArea = container.querySelector('textarea');
+          if (textArea && promptSelect.value) { textArea.value = promptSelect.value; textArea.focus(); }
+        };
+        extrasContainer.appendChild(promptSelect);
 
         // 2. Selector PROVEEDOR (Igual que antes)
         const providerSelect = document.createElement('select');
