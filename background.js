@@ -1,4 +1,4 @@
-// background.js - Versión 3.5.0 (Robustez Total + Fallbacks + Custom Prompts)
+// background.js - Versión 3.6.0 (Context MCP + Fallbacks + Custom Prompts)
 import { askGroq } from './groq.js';
 import { askOpenAI } from './openai.js';
 import { askClaude } from './claude.js';

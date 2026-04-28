@@ -1,4 +1,4 @@
-// options.js - v3.5.0 (API Keys + Prompts Management)
+// options.js - v3.6.0 (Context MCP + Keys + Prompts)
 
 const statusDiv = document.getElementById('status');
 

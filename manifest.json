@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
   "name": "Resumen IA de Pantalla",
-  "version": "3.5.0",
-  "version_name": "Custom Prompts",
-  "description": "Captura pantalla y consulta a múltiples IAs (Gemini, Groq, ChatGPT, Claude).",
+  "version": "3.6.0",
+  "version_name": "Context MCP",
+  "description": "Captura pantalla y consulta a múltiples IAs con soporte de Contexto Externo MCP.",
   "permissions": [
     "activeTab",
     "contextMenus",

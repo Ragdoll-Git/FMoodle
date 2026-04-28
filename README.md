@@ -11,8 +11,8 @@ Extensión de Chrome para uso personal que captura la pantalla actual y permite 
 
 para realizar consultas técnicas, resúmenes o extracción de código.
 
-- **Versión Actual:** 3.5.0 (*Custom Prompts*)
-- **Arquitectura:** Multi-Modelo con sistema de respaldo (*para errores de saturación (500) y couta excedida (429)*).
+- **Versión Actual:** 3.6.0 (*Context MCP Edition*)
+- **Arquitectura:** Multi-Modelo con sistema de respaldo e inyección de contexto (MCP).
 
 ## ✨ Características Principales
 
@@ -27,7 +27,9 @@ para realizar consultas técnicas, resúmenes o extracción de código.
   - Diseño renovado, centrado y con fondos aleatorios.
   - Modos: Ventana Flotante, Pin Mode (📌) y Burbuja Minimizada.
   - Prompts Predefinidos: Menú para instrucciones técnicas rápidas.
-- **⚙️ Configuración Segura:** Las API Keys se gestionan de forma independiente `options.html`.
+- **🔌 Contexto Externo (MCP):**
+  - **Inyección Inteligente:** Opción para habilitar llamadas a un servidor de contexto (Local u Online) e inyectar información antes de consultar a la IA.
+- **⚙️ Configuración Segura:** Las API Keys y URLs del MCP se gestionan desde `options.html`.
 
 ## ℹ️ Instalación y Uso
 
@@ -55,9 +57,41 @@ La extensión opera como un Módulo ES6 con **8 archivos clave**:
 - **`Error: not found for API version v1`**: Asegúrate de tener la última versión del código (el endpoint debe ser `v1beta` para Gemini 3).
 - **`Error 503 / 429`**: Saturación de Google. El sistema cambiará automáticamente a un modelo más ligero o a Groq.
 
+## 🔄 Flujo de Ejecución (MCP Context Workflow)
+
+```mermaid
+sequenceDiagram
+    participant U as Usuario
+    participant C as Content Script (UI)
+    participant B as Background (Router)
+    participant M as MCP Server
+    participant IA as Proveedor IA (Gemini/Groq/etc)
+
+    U->>C: Captura pantalla (Alt+Shift+Z)
+    U->>C: Escribe pregunta y activa "MCP"
+    C->>B: Envía {pregunta, proveedor, imagen, useMcp: true}
+    
+    alt useMcp == true
+        B->>M: POST /context {query, mode}
+        M-->>B: Retorna {context: "datos relevantes"}
+        B->>B: Inyecta [CONTEXTO ADICIONAL] al prompt
+    end
+    
+    B->>IA: Envía prompt final + Imagen
+    IA-->>B: Respuesta procesada
+    B-->>C: Envía resumen
+    C-->>U: Muestra resultado en pantalla
+```
+
 ## 📜 Historial de Versiones
 
-### v3.5.0 - La Actualización "Custom Prompts" (Actual)
+### v3.6.0 - La Actualización "Context MCP" (Actual)
+
+- **Soporte MCP:** Integración con servidores externos (Local/Online) para inyectar contexto adicional a las respuestas.
+- **Configuración Avanzada:** Gestión de modos de MCP y URL desde la página de Opciones.
+- **UI Contextual:** Botón toggle en la interfaz flotante para activar o desactivar la inyección de contexto por pregunta.
+
+### v3.5.0 - La Actualización "Custom Prompts"
 
 - **Prompts Editables:** Los prompts predefinidos ahora se gestionan desde la página de Opciones. Se pueden agregar, editar y eliminar.
 - **Robustez:** Implementación de `fetchWithRetry` con reintentos y backoff exponencial en todas las llamadas a Gemini.

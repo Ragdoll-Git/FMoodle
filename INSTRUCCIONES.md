@@ -40,15 +40,16 @@ Descargar la extension desde el archivo .zip de GitHub.
 4. Selecciona la carpeta de la extensión
 5. Recarga la pagina web donde quieras usar la extension, podes recargarla con `Shift + F5` o `Ctrl + Shift + R`.
 
-## 4. Configurar las Claves
+## 4. Configurar las Claves y el Contexto MCP
 
 1. Busca el icono de la extensión con un maletin amarillo en la barra de Chrome.
 2. Haz **click derecho** sobre el icono y elige **"Opciones"**.
-3. Verás dos casilleros:
+3. Verás las credenciales y la nueva configuración **Contexto MCP**:
     * **Google Gemini:** Pega tu clave `AIzaSy...`
     * **Groq Cloud:** Pega tu clave `gsk_...`
     * **OpenAI:** Pega tu clave `sk-...`
     * **Anthropic:** Pega tu clave `sk-ant-...`
+    * **Contexto MCP:** Activa la casilla, selecciona el modo (Local / Online) e ingresa la URL de tu endpoint (ej: `http://localhost:8000/api/context`).
 4. Dale a **Guardar**. ¡Listo!
 
 ## 5. Cómo Usar
@@ -73,3 +74,26 @@ Por defecto, la extensión intentará usar el mejor modelo disponible:
 4. Si falla, baja a **Groq** *(Mayor velocidad)*.
 
 Puedes forzar el uso de Groq desde el selector en la ventana de chat si lo prefieres para casos de mayor velocidad.
+
+### Uso del Contexto MCP (Servidor Externo)
+
+Cuando configuras una URL de MCP y lo activas en las opciones, verás un pequeño botón checkbox llamado **MCP** en la ventana flotante de consulta.
+
+Si está marcado, antes de preguntar a la IA, la extensión hará una solicitud POST a tu URL de MCP enviando:
+
+```json
+{
+  "query": "Tu pregunta...",
+  "mode": "local" // o "online", dependiendo de tus opciones
+}
+```
+
+Tu servidor debe devolver una respuesta JSON que contenga la información en una de las siguientes propiedades (`context`, `data` o `text`):
+
+```json
+{
+  "context": "Esta es la información que se inyectará..."
+}
+```
+
+La extensión se encarga automáticamente de integrar esta información como "Contexto Adicional" en la consulta final a la IA.
