@@ -210,6 +210,26 @@
 
     <hr class="section-divider">
 
+    <h3>Contexto MCP</h3>
+    <p>Conecta la IA a un entorno local o servidor externo para inyectar contexto a las consultas.</p>
+    
+    <div style="text-align: left; background: #f3f4f6; padding: 15px; border-radius: 8px; border: 1px solid #e5e7eb; margin-bottom: 20px;">
+      <label style="font-size: 14px; display: flex; align-items: center; gap: 8px; font-weight: 600; cursor: pointer;">
+        <input type="checkbox" id="mcpEnabled" style="width: auto; margin: 0;"> Activar Inyección de Contexto (MCP)
+      </label>
+
+      <h4 style="margin-top: 15px;">Modo de Conexión</h4>
+      <select id="mcpMode" style="width: 100%; padding: 8px; margin-bottom: 10px; border-radius: 6px; border: 1px solid #d1d5db; font-size: 13px;">
+        <option value="local">Local (Docker MCP)</option>
+        <option value="online">Online (Servidor Separado)</option>
+      </select>
+
+      <h4>URL del Servidor MCP</h4>
+      <input type="text" id="mcpUrl" placeholder="Ej: http://localhost:8000/context" style="margin-bottom: 0;" />
+    </div>
+
+    <hr class="section-divider">
+
     <h3>Prompts Predefinidos</h3>
     <p>Gestiona los prompts que aparecen en el selector de la ventana de consulta.</p>
 

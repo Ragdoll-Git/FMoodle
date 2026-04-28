@@ -138,6 +138,26 @@
         });
         providerSelect.onchange = () => chrome.storage.local.set({ preferredProvider: providerSelect.value });
         extrasContainer.appendChild(providerSelect);
+
+        // 3. Selector MCP
+        chrome.storage.sync.get(['MCP_ENABLED'], (data) => {
+          if (data.MCP_ENABLED) {
+            const mcpLabel = document.createElement('label');
+            Object.assign(mcpLabel.style, { display: 'flex', alignItems: 'center', fontSize: '11px', gap: '4px', cursor: 'pointer', background: '#f3f4f6', padding: '2px 6px', borderRadius: '4px', border: '1px solid #e5e7eb', marginLeft: '5px' });
+            
+            const mcpCheck = document.createElement('input');
+            mcpCheck.type = 'checkbox';
+            mcpCheck.id = 'gemini-mcp-toggle';
+            mcpCheck.checked = true; // Activo por defecto si en options está activo
+            Object.assign(mcpCheck.style, { margin: '0' });
+            
+            const mcpText = document.createElement('span');
+            mcpText.textContent = 'MCP';
+            
+            mcpLabel.append(mcpCheck, mcpText);
+            extrasContainer.appendChild(mcpLabel);
+          }
+        });
       }
 
       // Cuerpo del popup (Igual que antes)
@@ -160,6 +180,7 @@
         lastQuestionStartTime = Date.now(); // Start timer
         const question = questionInput.value.trim();
         const selectedProvider = header.querySelector('#gemini-provider-select')?.value || 'gemini';
+        const useMcp = header.querySelector('#gemini-mcp-toggle')?.checked || false;
 
         if (question) {
           showPopup("Analizando...", true);
@@ -167,7 +188,8 @@
           chrome.runtime.sendMessage({
             action: "sendQuestionToGemini",
             question: question,
-            provider: selectedProvider
+            provider: selectedProvider,
+            useMcp: useMcp
           });
         }
       };

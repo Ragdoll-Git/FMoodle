@@ -75,6 +75,9 @@ document.getElementById('save').addEventListener('click', () => {
     const groqKey = document.getElementById('groqApiKey').value.trim();
     const openaiKey = document.getElementById('openaiApiKey').value.trim();
     const claudeKey = document.getElementById('claudeApiKey').value.trim();
+    const mcpEnabled = document.getElementById('mcpEnabled').checked;
+    const mcpMode = document.getElementById('mcpMode').value;
+    const mcpUrl = document.getElementById('mcpUrl').value.trim();
     const customPrompts = collectPrompts();
 
     chrome.storage.sync.set({
@@ -82,6 +85,9 @@ document.getElementById('save').addEventListener('click', () => {
         GROQ_API_KEY: groqKey,
         OPENAI_API_KEY: openaiKey,
         CLAUDE_API_KEY: claudeKey,
+        MCP_ENABLED: mcpEnabled,
+        MCP_MODE: mcpMode,
+        MCP_URL: mcpUrl,
         CUSTOM_PROMPTS: customPrompts
     }, () => {
         statusDiv.style.color = 'green';
@@ -91,11 +97,14 @@ document.getElementById('save').addEventListener('click', () => {
 });
 
 // === CARGAR (Keys + Prompts) ===
-chrome.storage.sync.get(['GEMINI_API_KEY', 'GROQ_API_KEY', 'OPENAI_API_KEY', 'CLAUDE_API_KEY', 'CUSTOM_PROMPTS'], (items) => {
+chrome.storage.sync.get(['GEMINI_API_KEY', 'GROQ_API_KEY', 'OPENAI_API_KEY', 'CLAUDE_API_KEY', 'MCP_ENABLED', 'MCP_MODE', 'MCP_URL', 'CUSTOM_PROMPTS'], (items) => {
     if (items.GEMINI_API_KEY) document.getElementById('apiKey').value = items.GEMINI_API_KEY;
     if (items.GROQ_API_KEY) document.getElementById('groqApiKey').value = items.GROQ_API_KEY;
     if (items.OPENAI_API_KEY) document.getElementById('openaiApiKey').value = items.OPENAI_API_KEY;
     if (items.CLAUDE_API_KEY) document.getElementById('claudeApiKey').value = items.CLAUDE_API_KEY;
+    if (items.MCP_ENABLED !== undefined) document.getElementById('mcpEnabled').checked = items.MCP_ENABLED;
+    if (items.MCP_MODE) document.getElementById('mcpMode').value = items.MCP_MODE;
+    if (items.MCP_URL) document.getElementById('mcpUrl').value = items.MCP_URL;
 
     // Cargar prompts: custom desde storage, o defaults
     const prompts = items.CUSTOM_PROMPTS || DEFAULT_PROMPTS;

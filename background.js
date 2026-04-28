@@ -48,7 +48,7 @@ async function iniciarProceso(tab) {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     const tabId = sender.tab?.id;
     if (request.action === "sendQuestionToGemini") {
-        processQuestionRouter(tabId, request.question, request.provider);
+        processQuestionRouter(tabId, request.question, request.provider, request.useMcp);
         sendResponse({ status: "processing" });
     }
 });
@@ -85,32 +85,60 @@ async function fetchWithRetry(url, options, retries = MAX_RETRIES, backoff = 100
 }
 
 // 5. LÓGICA DE PROCESAMIENTO CENTRALIZADA
-async function processQuestionRouter(tabId, question, provider = 'gemini') {
+async function processQuestionRouter(tabId, question, provider = 'gemini', useMcp = false) {
     const base64ImageData = temporaryScreenshots[tabId];
     if (!base64ImageData) { sendMessageToContentScript(tabId, { action: "showError", message: "Imagen caducada." }); return; }
 
     try {
+        let finalQuestion = question;
+
+        // --- MCP INJECTION ---
+        if (useMcp) {
+            sendMessageToContentScript(tabId, { action: "showLoading", message: "Obteniendo contexto MCP..." });
+            try {
+                const settings = await chrome.storage.sync.get(['MCP_MODE', 'MCP_URL']);
+                if (settings.MCP_URL) {
+                    const mcpResponse = await fetchWithRetry(settings.MCP_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ query: question, mode: settings.MCP_MODE || 'local' })
+                    }, 1, 1000); // 1 reintento
+                    
+                    if (mcpResponse.ok) {
+                        const mcpData = await mcpResponse.json();
+                        const contextText = mcpData.context || mcpData.data || mcpData.text || JSON.stringify(mcpData);
+                        finalQuestion = `[CONTEXTO ADICIONAL MCP:\n${contextText}\n]\n\nPREGUNTA DEL USUARIO:\n${question}`;
+                    } else {
+                        console.warn("MCP Server respondió con error:", mcpResponse.status);
+                    }
+                }
+            } catch (mcpErr) {
+                console.warn("Error al contactar MCP:", mcpErr);
+            }
+            sendMessageToContentScript(tabId, { action: "showLoading", message: "Analizando tu pregunta..." });
+        }
+
         let result;
 
         if (provider === 'gemini') {
             // Gemini ya tiene su lógica de fallback compleja interna, la llamamos directa
-            await processQuestionWithGeminiOriginal(tabId, question, base64ImageData);
+            await processQuestionWithGeminiOriginal(tabId, finalQuestion, base64ImageData);
             return; 
         } 
         else if (provider === 'groq') {
             const apiKey = (await chrome.storage.sync.get(['GROQ_API_KEY'])).GROQ_API_KEY;
             if (!apiKey) throw new Error("Falta Groq API Key.");
-            result = await askGroq(question, base64ImageData, apiKey); // Groq debería usar fetchWithRetry internamente si es posible, pero aquí envolvemos la llamada
+            result = await askGroq(finalQuestion, base64ImageData, apiKey); // Groq debería usar fetchWithRetry internamente si es posible, pero aquí envolvemos la llamada
         }
         else if (provider === 'openai') {
             const apiKey = (await chrome.storage.sync.get(['OPENAI_API_KEY'])).OPENAI_API_KEY;
             if (!apiKey) throw new Error("Falta OpenAI API Key.");
-            result = await askOpenAI(question, base64ImageData, apiKey);
+            result = await askOpenAI(finalQuestion, base64ImageData, apiKey);
         }
         else if (provider === 'claude') {
             const apiKey = (await chrome.storage.sync.get(['CLAUDE_API_KEY'])).CLAUDE_API_KEY;
             if (!apiKey) throw new Error("Falta Claude API Key.");
-            result = await askClaude(question, base64ImageData, apiKey);
+            result = await askClaude(finalQuestion, base64ImageData, apiKey);
         }
 
         // Procesar resultado exitoso
