@@ -15,7 +15,7 @@ class MainController(QObject):
 
     def __init__(self):
         super().__init__()
-        self.app = QApplication(sys.sys.argv)
+        self.app = QApplication(sys.argv)
         self.app.setQuitOnLastWindowClosed(False)
 
         # Ventanas
@@ -63,6 +63,11 @@ class MainController(QObject):
 
     def on_activate_hotkey(self):
         """ Callback cuando se presiona Alt+Shift+Z """
+        # Si la ventana ya está visible, la ocultamos (Toggle)
+        if self.overlay.isVisible():
+            self.overlay.hide()
+            return
+            
         # La captura debe hacerse inmediatamente aquí para que no haya delay
         try:
             b64_img = capture_screen_base64()

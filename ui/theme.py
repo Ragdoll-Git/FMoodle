@@ -36,6 +36,16 @@ def get_stylesheet(theme: str) -> str:
             QPushButton:hover {
                 background-color: #2563eb;
             }
+            QPushButton#WindowControlBtn {
+                background-color: rgba(128, 128, 128, 0.1);
+                color: #1f2937;
+                border: 1px solid rgba(128, 128, 128, 0.4);
+                border-radius: 4px;
+                padding: 0px;
+            }
+            QPushButton#WindowControlBtn:hover {
+                background-color: rgba(128, 128, 128, 0.3);
+            }
             QComboBox {
                 background-color: rgba(255, 255, 255, 200);
                 border: 1px solid #d1d5db;
@@ -80,6 +90,16 @@ def get_stylesheet(theme: str) -> str:
             }
             QPushButton:hover {
                 background-color: #2563eb;
+            }
+            QPushButton#WindowControlBtn {
+                background-color: rgba(200, 200, 200, 0.1);
+                color: #f9fafb;
+                border: 1px solid rgba(200, 200, 200, 0.4);
+                border-radius: 4px;
+                padding: 0px;
+            }
+            QPushButton#WindowControlBtn:hover {
+                background-color: rgba(200, 200, 200, 0.3);
             }
             QComboBox {
                 background-color: rgba(40, 40, 40, 200);

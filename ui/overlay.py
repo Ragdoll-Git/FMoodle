@@ -66,15 +66,21 @@ class OverlayWindow(QWidget):
         self.mcp_checkbox = QCheckBox("MCP")
         self.mcp_checkbox.setChecked(config_manager.get("MCP_ENABLED", False))
 
+        self.minimize_btn = QPushButton("—")
+        self.minimize_btn.setObjectName("WindowControlBtn")
+        self.minimize_btn.setFixedSize(28, 28)
+        self.minimize_btn.clicked.connect(self.hide)
+
         self.close_btn = QPushButton("✕")
-        self.close_btn.setFixedSize(24, 24)
+        self.close_btn.setObjectName("WindowControlBtn")
+        self.close_btn.setFixedSize(28, 28)
         self.close_btn.clicked.connect(self.hide)
-        self.close_btn.setStyleSheet("background-color: transparent; color: #ef4444; font-weight: bold; border: none;")
 
         header_layout.addWidget(self.prompt_select)
         header_layout.addWidget(self.provider_select)
         header_layout.addWidget(self.mcp_checkbox)
         header_layout.addStretch()
+        header_layout.addWidget(self.minimize_btn)
         header_layout.addWidget(self.close_btn)
 
         # Input Area
@@ -166,6 +172,13 @@ class OverlayWindow(QWidget):
         self.input_box.setEnabled(True)
         self.show_message(f"Error: {err_msg}", is_error=True)
 
+    def set_input_visible(self, visible):
+        self.prompt_select.setVisible(visible)
+        self.provider_select.setVisible(visible)
+        self.mcp_checkbox.setVisible(visible)
+        self.input_box.setVisible(visible)
+        self.send_btn.setVisible(visible)
+
     def show_message(self, text, is_loading=False, is_error=False):
         self.scroll_area.show()
         if is_error:
@@ -177,21 +190,31 @@ class OverlayWindow(QWidget):
         
         self.output_label.setText(text)
         
-        # Expand height
+        # Ocultar los inputs para dejar solo la respuesta
+        self.set_input_visible(False)
+        
+        # Ajustar tamaño
         self.resize(400, 350)
+        
+        # Reposicionar usando availableGeometry para evitar la barra de tareas
+        screen = QApplication.primaryScreen().availableGeometry()
+        x = (screen.width() - self.width()) // 2
+        y = screen.height() - self.height() - 20
+        self.move(x, y)
         
     def show_for_capture(self, b64_img):
         self.base64_image = b64_img
         self.apply_theme()
         
         self.scroll_area.hide()
+        self.set_input_visible(True)
         self.resize(400, 150)
         self.input_box.clear()
         
-        # Position at bottom center
-        screen = QApplication.primaryScreen().geometry()
+        # Reposicionar usando availableGeometry
+        screen = QApplication.primaryScreen().availableGeometry()
         x = (screen.width() - self.width()) // 2
-        y = screen.height() - self.height() - 50 # 50px offset from bottom
+        y = screen.height() - self.height() - 20
         self.move(x, y)
         
         self.show()
