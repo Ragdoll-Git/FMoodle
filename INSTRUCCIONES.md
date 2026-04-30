@@ -1,99 +1,78 @@
-# ℹ️ Instrucciones de Instalación y Uso
+# Instrucciones de Uso y Compilación 🛠️
 
-## 1. Requisitos Previos
+Este documento detalla cómo utilizar, instalar y compilar **FMoodle Desktop** desde cero.
 
-Descargar la extension desde el archivo .zip de GitHub.
+---
 
-1. Te diriges a `<Code>` y seleccionas `Descargar ZIP`.
-2. Te diriges a la carpeta donde se descargo el archivo .zip y descomprimelo.
+## 1. Instalación Rápida (Usuarios Finales)
 
-## 2. Obtener tus Claves (API Keys)
+Si solo quieres usar el programa, dirígete a la carpeta `Releases/` en el código fuente (o descárgalos desde GitHub Releases) y elige tu versión preferida:
 
-### A. Google Gemini (Principal)
+### Opción A: Instalador Persistente (`FMoodle_Installer.exe`)
+Ideal para tu computadora personal de uso diario.
+1. Ejecuta `FMoodle_Installer.exe`.
+2. Sigue el asistente de instalación clásico (Siguiente > Instalar).
+3. Una vez instalado, ábrelo. Ve a la pestaña **Ajustes** (ícono del engranaje).
+4. Introduce tus API Keys (se guardarán en el *Administrador de Credenciales de Windows*, jamás en texto plano).
+5. (Opcional) Activa "Iniciar con Windows" para que el asistente esté siempre activo al encender tu PC.
 
-1. Ve a [Google AI Studio](https://aistudio.google.com/app/apikey).
-2. Inicia sesión y crea una API Key.
+### Opción B: Modo Portable (`FMoodle_Portable.exe`)
+Ideal para computadoras de terceros, bibliotecas, oficinas o pendrives.
+1. Copia `FMoodle_Portable.exe` a tu pendrive.
+2. Ejecútalo. **No pedirá permisos de administrador**.
+3. Pon tus API Keys temporalmente en Ajustes.
+4. Cuando cierres la ventana, la memoria RAM se vaciará y la PC quedará sin ningún rastro de tus configuraciones o claves.
 
-*Nota: Esta key te dará acceso automático a **Gemini 3.0 Preview** y **Gemini 2.5**.*
+---
 
-### B. Groq Cloud (Respaldo Recomendado)
+## 2. Configuración para Desarrolladores
 
-1. Ve a [Groq Console](https://console.groq.com/keys).
-2. Crea una API Key para tener un respaldo si Google se satura.
+Si quieres modificar el código de FMoodle en tu computadora, sigue estos pasos.
 
-### C. OpenAI (Opcional)
+### Prerrequisitos
+* **Python 3.10+** (Recomendado 3.11 o superior).
+* Entorno Windows 10 u 11 (Usa la API `winreg` y el `Credential Manager` de Windows).
 
-1. Ve a [OpenAI Platform](https://platform.openai.com/api-keys).
-2. Crea una API Key si tienes créditos disponibles (requiere pago por uso).
+### Configuración del Entorno Virtual
+1. Abre tu terminal (PowerShell o CMD).
+2. Clona el repositorio y entra a la carpeta:
+   ```powershell
+   git clone https://github.com/Lautaro-cloud/FMoodle.git
+   cd FMoodle/FMoodle
+   ```
+3. Crea y activa tu entorno virtual:
+   ```powershell
+   python -m venv .venv
+   .\.venv\Scripts\activate
+   ```
+4. Instala las dependencias:
+   ```powershell
+   pip install -r requirements.txt
+   ```
+   *(Asegúrate de instalar PySide6, keyring, requests, mcp, etc)*
 
-### D. Anthropic Claude (Opcional - Recomendado)
+### Ejecutar en Desarrollo
+Puedes ejecutar las dos versiones directo desde el intérprete:
+- **Modo normal:** `python main.py`
+- **Modo en RAM (Portable):** `python portable.py`
 
-1. Ve a [Anthropic Console](https://console.anthropic.com/settings/keys).
-2. Crea una API Key (requiere créditos pre-pagados).
-3. Clave para usar el modelo **Claude 3.5 Sonnet**.
+---
 
-## 3. Instalar en Chrome
+## 3. Compilación y Empaquetado
 
-1. Abre Chrome y ve a: `chrome://extensions`.
-2. Activa el **"Modo de desarrollador"**.
-3. Haz clic en **"Cargar descomprimida"**.
-4. Selecciona la carpeta de la extensión
-5. Recarga la pagina web donde quieras usar la extension, podes recargarla con `Shift + F5` o `Ctrl + Shift + R`.
+Para generar tus propios `.exe`, FMoodle cuenta con un script de compilación inteligente que usa `PyInstaller` encapsulado.
 
-## 4. Configurar las Claves y el Contexto MCP
+1. Asegúrate de tener tu entorno virtual activo (`.\.venv\Scripts\activate`).
+2. Verifica que `pyinstaller` esté instalado:
+   ```powershell
+   pip install pyinstaller
+   ```
+3. Ejecuta el empaquetador:
+   ```powershell
+   python build.py
+   ```
+4. Esto limpiará las builds anteriores y creará una carpeta `dist/` con las nuevas compilaciones y la carpeta `Releases/` lista para distribuir.
 
-1. Busca el icono de la extensión con un maletin amarillo en la barra de Chrome.
-2. Haz **click derecho** sobre el icono y elige **"Opciones"**.
-3. Verás las credenciales y la nueva configuración **Contexto MCP**:
-    * **Google Gemini:** Pega tu clave `AIzaSy...`
-    * **Groq Cloud:** Pega tu clave `gsk_...`
-    * **OpenAI:** Pega tu clave `sk-...`
-    * **Anthropic:** Pega tu clave `sk-ant-...`
-    * **Contexto MCP:** Activa la casilla, selecciona el modo (Local / Online) e ingresa la URL de tu endpoint (ej: `http://localhost:8000/api/context`).
-4. Dale a **Guardar**. ¡Listo!
-
-## 5. Cómo Usar
-
-### Capturar Pantalla
-
-* Puedes abrir la extension a traves de un atajo o desde el menu derecho de la extension.
-
-    1. Click derecho en la extension y despues en "Gestionar extension"
-    2. Click en Accesos directos.
-    3. Agregar el atajo `Alt + Shift + Z`
-
-* Click derecho en cualquier lugar de la pagina web y seleccionar: "Preguntar a la IA sobre esta pantalla".
-
-### Triple modelo para mayor estabilidad y fallback
-
-Por defecto, la extensión intentará usar el mejor modelo disponible:
-
-1. **Gemini 3.0 Flash Preview** *(Mayor razonamiento)*.
-2. Si falla, baja a **Gemini 2.5 Flash**.
-3. Si falla, baja a **Gemini 2.5 Flash Lite**.
-4. Si falla, baja a **Groq** *(Mayor velocidad)*.
-
-Puedes forzar el uso de Groq desde el selector en la ventana de chat si lo prefieres para casos de mayor velocidad.
-
-### Uso del Contexto MCP (Servidor Externo)
-
-Cuando configuras una URL de MCP y lo activas en las opciones, verás un pequeño botón checkbox llamado **MCP** en la ventana flotante de consulta.
-
-Si está marcado, antes de preguntar a la IA, la extensión hará una solicitud POST a tu URL de MCP enviando:
-
-```json
-{
-  "query": "Tu pregunta...",
-  "mode": "local" // o "online", dependiendo de tus opciones
-}
-```
-
-Tu servidor debe devolver una respuesta JSON que contenga la información en una de las siguientes propiedades (`context`, `data` o `text`):
-
-```json
-{
-  "context": "Esta es la información que se inyectará..."
-}
-```
-
-La extensión se encarga automáticamente de integrar esta información como "Contexto Adicional" en la consulta final a la IA.
+### Crear un Instalador Profesional
+Si deseas generar un instalador con formato asistente (Next > Next > Install), puedes descargar **Inno Setup Compiler**. 
+Abre el archivo `inno_setup.iss` con este programa y dale al botón "Compile". Generará el instalador automáticamente en la carpeta `Output/`.

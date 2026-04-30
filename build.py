@@ -4,6 +4,9 @@ import subprocess
 import sys
 
 def build():
+    # Cambiar al directorio donde está el script para que no falle si se llama desde otra ruta
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
     print("Limpiando builds anteriores...")
     if os.path.exists("dist"):
         shutil.rmtree("dist")

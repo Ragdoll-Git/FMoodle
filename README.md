@@ -1,143 +1,35 @@
-# 📸 Resumen IA de Pantalla
+# FMoodle Desktop 🚀
 
-## 📦 (Versión Local - Multi-Model Edition)
+FMoodle es una aplicación de escritorio nativa para Windows, diseñada para integrar y gestionar de forma centralizada múltiples proveedores de Inteligencia Artificial (Gemini, Claude, OpenAI, Groq y Nvidia Kimi K2.5). 
 
-Extensión de Chrome para uso personal que captura la pantalla actual y permite elegir entre:
-
-- **Google Gemini** *(3.0 Flash Preview / 2.5 Flash / 2.5 Flash Lite)*
-- **Claude** *(Claude 3.5 Sonnet)*
-- **ChatGPT** *(GPT-5)*
-- **Groq** *(Llama 4 Scout)*
-
-para realizar consultas técnicas, resúmenes o extracción de código.
-
-- **Versión Actual:** 3.6.0 (*Context MCP Edition*)
-- **Arquitectura:** Multi-Modelo con sistema de respaldo e inyección de contexto (MCP).
+Originalmente nacida como una extensión web, FMoodle ha evolucionado a un robusto sistema de escritorio con soporte para el protocolo MCP (Model Context Protocol), operación en memoria (Zero-Knowledge) y soporte nativo del sistema operativo.
 
 ## ✨ Características Principales
 
-- **🧠 Inteligencia Adaptativa:**
-  - **Principal:** **Gemini 3.0 Flash Preview**. Alta precisión y razonamiento.
-  - **Respaldo Automático:** 3.0 -> 2.5 Flash -> 2.5 Lite -> Groq. (Incluye soporte para error de Cuota 429).
-  - **Selector en Vivo:** Elige tu modelo preferido (Gemini / Claude / ChatGPT / Groq) desde el popup.
-- **🧠 Soporte Anthropic:** Integración con **Claude 3.5 Sonnet** para razonamiento avanzado.
-- **🤖 Soporte OpenAI:** Integración oficial con ChatGPT (GPT-5).
-- **📸 Captura Instantánea:** Atajo `Alt+Shift+Z`.
-- **💬 Interfaz Avanzada:**
-  - Diseño renovado, centrado y con fondos aleatorios.
-  - Modos: Ventana Flotante, Pin Mode (📌) y Burbuja Minimizada.
-  - Prompts Predefinidos: Menú para instrucciones técnicas rápidas.
-- **🔌 Contexto Externo (MCP):**
-  - **Inyección Inteligente:** Opción para habilitar llamadas a un servidor de contexto (Local u Online) e inyectar información antes de consultar a la IA.
-- **⚙️ Configuración Segura:** Las API Keys y URLs del MCP se gestionan desde `options.html`.
+* **🤖 Soporte Multi-Proveedor:**
+  * **Google Gemini**
+  * **Anthropic Claude 3.5 Sonnet**
+  * **OpenAI (ChatGPT)**
+  * **Groq**
+  * **Nvidia Labs (Kimi K2.5)**
+* **🔒 Seguridad Zero-Knowledge:** Todas las claves de API (API Keys) se almacenan de manera completamente segura utilizando el Administrador de Credenciales nativo de Windows (Windows Credential Vault). Las claves jamás se guardan en texto plano.
+* **🌐 Soporte MCP (Model Context Protocol):** Integración nativa para consumir recursos y herramientas desde servidores MCP remotos o locales, ampliando las capacidades del asistente de IA.
+* **🚀 Modo Portable (RAM-Only):** Puede ejecutarse en modo 100% portable donde los datos residen únicamente en la memoria RAM, sin dejar rastros de configuración o claves en el disco de la computadora.
+* **💻 Interfaz Moderna (PySide6):** UI construida con Qt/PySide6, con soporte de temas, modo siempre-visible (Always on Top) y diseño responsivo.
+* **⚡ Autoinicio de Windows:** Se integra silenciosamente con Windows, ejecutándose en segundo plano al iniciar sesión mediante el registro de Windows (`winreg`).
 
-## ℹ️ Instalación y Uso
+## 📁 Estructura del Proyecto
 
-Para obtener las API Keys y configurar la extensión, sigue las [**`INSTRUCCIONES.md (clic aquí)`**](./INSTRUCCIONES.md).
+* `core/`: Contiene el enrutador de IA (`providers.py`) y la lógica de conexión al servidor MCP (`mcp.py`).
+* `ui/`: Todos los componentes visuales interactivos (`overlay.py`, `settings.py`, `theme.py`).
+* `utils/`: Herramientas del sistema, persistencia y capturas (`config.py`, `capture.py`, `autostart.py`).
+* `main.py`: Punto de entrada clásico para la aplicación instalable persistente.
+* `portable.py`: Punto de entrada especial que bloquea la escritura en disco (Modo RAM).
 
-## 🛠️ Estructura Técnica
+## 🛡️ Versiones y Distribución
+El proyecto incluye un script de automatización (`build.py`) impulsado por **PyInstaller** que compila la aplicación en dos formatos listos para usar en la carpeta `/Releases`:
+1. **FMoodle Installer:** Versión estándar para instalar permanentemente en el sistema.
+2. **FMoodle Portable:** Un solo `.exe` que puedes llevar en un USB, ejecutar sin permisos de administrador y usar con privacidad absoluta.
 
-La extensión opera como un Módulo ES6 con **8 archivos clave**:
-
-- `manifest.json`: Permisos V3 para background modules.
-- `background.js`: Router inteligente con lógica de fallback y reintentos (Exponential Backoff).
-- `groq.js`: Cliente API para Llama 4.
-- `content.js`: UI Reactiva con inyección inteligente.
-- `prompts.js`: Biblioteca de instrucciones.
-- `options.html` / `.js`: Gestión de Keys segura.
-- `/images/`: Assets.
-
-## 🐛 Solución de Errores Comunes
-
-- **`Error: The model has been decommissioned`**: Asegúrate de usar la versión más reciente de `groq.js` que apunta a *Llama 4 Scout* (los modelos beta cambian rápido).
-- **`Network Error / Failed to fetch`**: Revisa tu conexión. Si usas Groq, verifica que la API Key sea correcta en Opciones.
-- **`Extension context invalidated`**: Si actualizas la extensión, debes recargar la página web (F5) donde la estés usando.
-- **`Error 503 (Service Unavailable)`**: Saturación de Google. La extensión intentará usar el modelo "Lite" automáticamente.
-- **`Error 404 (Not Found)`**: Indica que el modelo buscado ya no existe (solucionado en esta versión al migrar de 1.5 a 2.5).
-- **`Error: not found for API version v1`**: Asegúrate de tener la última versión del código (el endpoint debe ser `v1beta` para Gemini 3).
-- **`Error 503 / 429`**: Saturación de Google. El sistema cambiará automáticamente a un modelo más ligero o a Groq.
-
-## 🔄 Flujo de Ejecución (MCP Context Workflow)
-
-```mermaid
-sequenceDiagram
-    participant U as Usuario
-    participant C as Content Script (UI)
-    participant B as Background (Router)
-    participant M as MCP Server
-    participant IA as Proveedor IA (Gemini/Groq/etc)
-
-    U->>C: Captura pantalla (Alt+Shift+Z)
-    U->>C: Escribe pregunta y activa "MCP"
-    C->>B: Envía {pregunta, proveedor, imagen, useMcp: true}
-    
-    alt useMcp == true
-        B->>M: POST /context {query, mode}
-        M-->>B: Retorna {context: "datos relevantes"}
-        B->>B: Inyecta [CONTEXTO ADICIONAL] al prompt
-    end
-    
-    B->>IA: Envía prompt final + Imagen
-    IA-->>B: Respuesta procesada
-    B-->>C: Envía resumen
-    C-->>U: Muestra resultado en pantalla
-```
-
-## 📜 Historial de Versiones
-
-### v3.6.0 - La Actualización "Context MCP" (Actual)
-
-- **Soporte MCP:** Integración con servidores externos (Local/Online) para inyectar contexto adicional a las respuestas.
-- **Configuración Avanzada:** Gestión de modos de MCP y URL desde la página de Opciones.
-- **UI Contextual:** Botón toggle en la interfaz flotante para activar o desactivar la inyección de contexto por pregunta.
-
-### v3.5.0 - La Actualización "Custom Prompts"
-
-- **Prompts Editables:** Los prompts predefinidos ahora se gestionan desde la página de Opciones. Se pueden agregar, editar y eliminar.
-- **Robustez:** Implementación de `fetchWithRetry` con reintentos y backoff exponencial en todas las llamadas a Gemini.
-- **Fallback Universal:** Si falla cualquier proveedor (Claude, ChatGPT), el sistema intenta Groq como respaldo.
-- **Versionado:** Sincronización de versión en manifest, README y código.
-
-### v3.4.0 - La Actualización "Claude"
-
-- **Nuevo Proveedor:** Soporte para **Claude 3.5 Sonnet** (Anthropic).
-- **Core Fix:** Solucionado error crítico en headers (`Latin-1`) al copiar API Keys con caracteres invisibles.
-- **Ajustes:** Temperatura de Groq ajustada a 0.27 para respuestas más precisas.
-
-### v3.3.0 - La Actualización "OpenAI"
-
-- **Nuevo Proveedor:** Soporte completo para **ChatGPT (GPT-5)**.
-- **UI Revamp:** Diseño de opciones centrado y estilizado con fondos dinámicos.
-- **Fallback Inteligente:** El sistema ahora detecta el error "Cuota Excedida" (429) y salta automáticamente de Gemini 3.0 -> 2.5 -> Lite, maximizando el uso gratuito.
-- **Configuración:** Opción para guardar clave de OpenAI.
-
-### v3.2.0 - La Actualización "Gemini 3"
-
-- **Motor:** Actualizado a **Gemini 3.0 Flash Preview**.
-- **Estabilidad:** Eliminado el "Modo Live" para reducir complejidad y fallos.
-- **Fallback:** Sistema de triple respaldo (3.0 -> 2.5 -> Lite -> Groq).
-
-### v3.0.0 - La Actualización "Groq"
-
-- **Nuevo Proveedor:** Integración completa de Groq Cloud (Llama 4 Scout).
-- **Zero-Copy:** Optimización de memoria en manejo de imágenes.
-- **Optimización Crítica:** Se eliminó el envío de Base64 entre procesos. La imagen se almacena temporalmente en el Service Worker para reducir el consumo de memoria.
-- **UI:** Nuevo selector "Gemini / Groq" en la barra de título.
-- **Resiliencia:** Implementación de reintentos automáticos (Exponential Backoff) para saturación de servidores (errores 429/503).
-
-### v2.5.1 - Migración & Estabilidad
-
-- **Migración de Modelos:** Se eliminó el soporte para `gemini-1.5-flash` (deprecado). Ahora el sistema de fallback alterna entre **2.5 Flash** y **2.5 Flash Lite**.
-- **UI Informativa:** El título de la ventana ahora confirma la versión del modelo utilizado.
-- **Fix "Hot Reload":** Se cambiaron las declaraciones de variables (`const` a `var`) y se agregó protección en `content.js` para evitar errores al recargar la extensión mientras se desarrolla.
-- **Fix Contexto:** Validación añadida en `savePosition` para evitar errores de consola al perder la conexión con el Service Worker.
-
-### v2.5 - Seguridad y UI Refinada
-
-- **Nueva Configuración:** Se eliminó la API Key del código (hardcoded). Ahora se usa una página de Opciones (`options.html`) y se guarda en `chrome.storage`.
-- **Minimizar:** Se mejoró el modo "burbuja" con un botón flotante dedicado para restaurar la ventana.
-- **Permisos:** Migración a inyección programática (`scripting`) para mejor rendimiento y cumplimiento de Manifest V3.
-
-### v2.4 - Inteligencia
-
-- **Selector de Prompts:** Menú desplegable añadido para seleccionar instrucciones rápidas predefinidas (ej: Programación C++, Señales).
+---
+Para aprender cómo instalar, compilar desde el código fuente o configurar tu versión portable, por favor lee la guía en el archivo **[INSTRUCCIONES.md](INSTRUCCIONES.md)**.
