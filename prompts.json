@@ -1,0 +1,10 @@
+[
+    {
+        "title": "Programacion C/C++",
+        "text": "Podes desarrollar el codigo en C, únicamente incluyendo en el codigo: 1. La libreria iostream (salvo caso indispensable de usar otra/s). 2. Variables lejibles y humanas. 3. cout, cin (using namespace std), int, float (no setear precision), no usar funciones (salvo si es indispensablemente necesario). 4. Sin comentarios, ni tampoco descripciones largas. El ejercicio es:"
+    },
+    {
+        "title": "Pantalla",
+        "text": "¿Cual es la respuesta de la pregunta de la imagen? Tomando en contexto los datos y que sos un tecnico en redes de datos y telecomunicaciones"
+    }
+]

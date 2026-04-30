@@ -57,7 +57,7 @@ class OverlayWindow(QWidget):
         self.prompt_select.currentIndexChanged.connect(self.on_prompt_selected)
         
         self.provider_select = QComboBox()
-        self.provider_select.addItems(["gemini", "groq", "openai", "claude"])
+        self.provider_select.addItems(["gemini", "groq", "openai", "claude", "nvidia"])
         self.provider_select.setCurrentText(config_manager.get("preferredProvider", "gemini"))
         self.provider_select.currentTextChanged.connect(
             lambda t: config_manager.set("preferredProvider", t)
@@ -202,7 +202,18 @@ class OverlayWindow(QWidget):
         y = screen.height() - self.height() - 20
         self.move(x, y)
         
+    def refresh_prompts(self):
+        # Guardar el índice actual si es posible, o limpiar
+        self.prompt_select.blockSignals(True)
+        self.prompt_select.clear()
+        self.prompt_select.addItem("Prompt...", "")
+        prompts = config_manager.get("CUSTOM_PROMPTS", [])
+        for p in prompts:
+            self.prompt_select.addItem(p["title"], p["text"])
+        self.prompt_select.blockSignals(False)
+
     def show_for_capture(self, b64_img):
+        self.refresh_prompts()
         self.base64_image = b64_img
         self.apply_theme()
         

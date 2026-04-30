@@ -98,6 +98,34 @@ def ask_claude(question: str, base64_image: str, api_key: str):
         raise Exception(f"Claude Error: {err}")
     return resp.json()["content"][0]["text"], "Claude 3.5 Sonnet"
 
+# --- NVIDIA LABS ---
+def ask_nvidia(question: str, base64_image: str, api_key: str):
+    url = "https://integrate.api.nvidia.com/v1/chat/completions"
+    payload = {
+        "model": "moonshot/kimi-k2.5-instruct",
+        "messages": [
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": question},
+                    {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{base64_image}"}}
+                ]
+            }
+        ],
+        "temperature": 0.4,
+        "max_tokens": 4000
+    }
+    headers = {
+        "Authorization": f"Bearer {api_key.strip()}",
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+    }
+    resp = requests.post(url, json=payload, headers=headers)
+    if resp.status_code != 200:
+        err = resp.json().get('error', {}).get('message', f'Status {resp.status_code}')
+        raise Exception(f"Nvidia Error: {err}")
+    return resp.json()["choices"][0]["message"]["content"], "Nvidia (Kimi K2.5)"
+
 # --- GEMINI (CASCADA Y RETRIES) ---
 def fetch_gemini_with_retry(model, payload, api_key, retries=2):
     base_url = "https://generativelanguage.googleapis.com/v1beta/models/"
@@ -168,6 +196,11 @@ def process_question(question: str, base64_image: str, provider: str, use_mcp: b
             key = config_manager.get('CLAUDE_API_KEY')
             if not key: raise Exception("Falta Claude API Key.")
             return ask_claude(final_question, base64_image, key)
+            
+        elif provider == 'nvidia':
+            key = config_manager.get('NVIDIA_API_KEY')
+            if not key: raise Exception("Falta Nvidia API Key.")
+            return ask_nvidia(final_question, base64_image, key)
             
         else:
             raise Exception("Proveedor desconocido.")

@@ -1,2 +1,10 @@
 /backups
 /pdf
+__pycache__/
+.venv/
+build/
+dist/
+Output/
+*.spec
+.pytest_cache/
+tests/
