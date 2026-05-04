@@ -75,4 +75,4 @@ Para generar tus propios `.exe`, FMoodle cuenta con un script de compilación in
 
 ### Crear un Instalador Profesional
 Si deseas generar un instalador con formato asistente (Next > Next > Install), puedes descargar **Inno Setup Compiler**. 
-Abre el archivo `inno_setup.iss` con este programa y dale al botón "Compile". Generará el instalador automáticamente en la carpeta `Output/`.
+Abre el archivo `inno_setup.iss` con este programa y dale al botón "Compile". Generará el instalador automáticamente en la carpeta `Output/`. *(Nota vital: Debes haber ejecutado `build.py` primero para que se genere la carpeta `dist/`, o de lo contrario Inno Setup lanzará un error de "No files found").*

@@ -26,9 +26,22 @@ DEFAULT_PROMPTS = [
 
 class ConfigManager:
     def __init__(self, config_path=CONFIG_FILE, prompts_path=PROMPTS_FILE):
-        self.config_path = config_path
-        self.prompts_path = prompts_path
         self.is_portable = os.environ.get("FMOODLE_PORTABLE") == "1"
+        
+        if not self.is_portable:
+            appdata_dir = os.environ.get("APPDATA", "")
+            if appdata_dir:
+                base_dir = os.path.join(appdata_dir, SERVICE_NAME)
+                os.makedirs(base_dir, exist_ok=True)
+                self.config_path = os.path.join(base_dir, config_path)
+                self.prompts_path = os.path.join(base_dir, prompts_path)
+            else:
+                self.config_path = config_path
+                self.prompts_path = prompts_path
+        else:
+            self.config_path = config_path
+            self.prompts_path = prompts_path
+
         self.portable_secrets = {}
         self.config = self.load()
         self.prompts = self.load_prompts()

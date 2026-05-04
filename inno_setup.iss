@@ -1,12 +1,12 @@
 [Setup]
 AppName=FMoodle
-AppVersion=1.0
-DefaultDirName={pf}\FMoodle
+AppVersion=1.1
+DefaultDirName={autopf}\FMoodle
 DefaultGroupName=FMoodle
 OutputBaseFilename=FMoodle_Installer
 Compression=lzma
 SolidCompression=yes
-ArchitecturesInstallIn64BitMode=x64
+ArchitecturesInstallIn64BitMode=x64compatible
 
 [Tasks]
 Name: "desktopicon"; Description: "Crear un icono en el escritorio"; GroupDescription: "Iconos adicionales:"

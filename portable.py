@@ -7,4 +7,5 @@ os.environ["FMOODLE_PORTABLE"] = "1"
 import main
 
 if __name__ == "__main__":
-    main.run()
+    controller = main.MainController()
+    controller.run()
