@@ -1,6 +1,15 @@
 import os
+import sys
 import json
 import keyring
+
+def get_resource_path(relative_path):
+    """Resuelve la ruta a un recurso empaquetado (PyInstaller) o en desarrollo."""
+    if getattr(sys, 'frozen', False):
+        base_path = sys._MEIPASS
+    else:
+        base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base_path, relative_path)
 
 CONFIG_FILE = "config.json"
 PROMPTS_FILE = "prompts.json"
@@ -15,12 +24,8 @@ DEFAULT_CONFIG = {
 
 DEFAULT_PROMPTS = [
     {
-        "title": "Tratamiento de Señal",
-        "text": "Sos un experto en transformadas de fourier, señales electricas (analogicas y digitales), matematica aplicada. Necesito que resuelvas profundizando y razonando bien los ejercicios siguientes, pero respondiendo de forma concisa, corta y clara, despues si queres dar una breve explicacion, hazlo debajo de la respuesta corta. El ejercicio es:"
-    },
-    {
-        "title": "Programacion C/C++",
-        "text": "Podes desarrollar el codigo en C, únicamente incluyendo en el codigo: 1. La libreria iostream (salvo caso indispensable de usar otra/s). 2. Variables lejibles y humanas. 3. cout, cin (using namespace std), int, float (no setear precision), no usar funciones (salvo si es indispensablemente necesario). 4. Sin comentarios, ni tampoco descripciones largas. El ejercicio es:"
+        "title": "Contenido de pantalla",
+        "text": "Necesito que analices el contenido de pantalla, y respondas la pregunta que esta ahi dentro, mirando las opciones multiple choice, datos, y contexto que te doy. Responde de forma concisa y clara con la letra de la respuesta correcta o las opciones a marcar correctas o la respuesta escrita. Despues da una breve explicacion de tu respuesta pero abajo de la respuesta corta. No incluyas el texto de la pregunta, ni nada de eso, solo la respuesta, y abajo la explicacion si queres."
     }
 ]
 
@@ -69,6 +74,9 @@ class ConfigManager:
             self.save_config()
 
     def load(self):
+        if self.is_portable:
+            return DEFAULT_CONFIG.copy()
+
         if not os.path.exists(self.config_path):
             self.save(DEFAULT_CONFIG)
             return DEFAULT_CONFIG.copy()
@@ -83,6 +91,9 @@ class ConfigManager:
             return DEFAULT_CONFIG.copy()
 
     def load_prompts(self):
+        if self.is_portable:
+            return DEFAULT_PROMPTS.copy()
+
         if not os.path.exists(self.prompts_path):
             self.save_prompts(DEFAULT_PROMPTS)
             return DEFAULT_PROMPTS.copy()

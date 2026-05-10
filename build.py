@@ -16,6 +16,15 @@ def build():
     # Forzamos la ruta al PyInstaller dentro del entorno virtual
     pyinstaller_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".venv", "Scripts", "pyinstaller.exe")
 
+    # Argumentos comunes: datos empaquetados y módulos ocultos
+    common_args = [
+        "--add-data", "images;images",
+        "--hidden-import", "pynput.keyboard._win32",
+        "--hidden-import", "pynput.mouse._win32",
+        "--hidden-import", "keyring.backends",
+        "--hidden-import", "keyring.backends.Windows",
+    ]
+
     print("Compilando versión Persistente (FMoodle.exe)...")
     subprocess.run([
         pyinstaller_path,
@@ -23,6 +32,7 @@ def build():
         "--onedir",
         "--windowed",
         "--name", "FMoodle",
+        *common_args,
         "main.py"
     ], check=True)
 
@@ -33,6 +43,7 @@ def build():
         "--onefile",
         "--windowed",
         "--name", "FMoodle_Portable",
+        *common_args,
         "portable.py"
     ], check=True)
 

@@ -132,18 +132,17 @@ def fetch_gemini_with_retry(model, payload, api_key, retries=2):
     url = f"{base_url}{model}:generateContent?key={api_key.strip()}"
     headers = {"Content-Type": "application/json"}
     
+    last_response = None
     for attempt in range(retries + 1):
         try:
-            resp = requests.post(url, json=payload, headers=headers)
-            if resp.status_code in (429, 503, 500):
-                raise Exception(f"Server Error {resp.status_code}")
-            return resp
-        except Exception as e:
+            last_response = requests.post(url, json=payload, headers=headers)
+            if last_response.status_code in (429, 503, 500):
+                raise Exception(f"Server Error {last_response.status_code}")
+            return last_response
+        except Exception:
             if attempt < retries:
-                time.sleep(1 * (2**attempt))
-            else:
-                return resp if 'resp' in locals() else None
-    return None
+                time.sleep(1 * (2 ** attempt))
+    return last_response
 
 def ask_gemini_cascade(question: str, base64_image: str, api_key: str):
     payload = {
@@ -174,6 +173,7 @@ def ask_gemini_cascade(question: str, base64_image: str, api_key: str):
 
 # --- ROUTER PRINCIPAL ---
 def process_question(question: str, base64_image: str, provider: str, use_mcp: bool):
+    final_question = question
     try:
         final_question = inject_context_if_needed(question, use_mcp)
         

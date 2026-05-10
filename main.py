@@ -8,6 +8,7 @@ from pynput import keyboard
 from ui.overlay import OverlayWindow
 from ui.settings import SettingsWindow
 from utils.capture import capture_screen_base64
+from utils.config import get_resource_path
 
 class MainController(QObject):
     # Usamos Signals para comunicarnos desde el hilo de pynput al hilo principal de Qt
@@ -30,7 +31,7 @@ class MainController(QObject):
 
     def setup_tray(self):
         # Intentar cargar icono existente si hay
-        icon = QIcon("images/icon16.png")
+        icon = QIcon(get_resource_path("images/icon16.png"))
         if icon.isNull():
             # Fallback a algo interno
             icon = self.app.style().standardIcon(self.app.style().StandardPixmap.SP_ComputerIcon)

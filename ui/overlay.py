@@ -113,6 +113,20 @@ class OverlayWindow(QWidget):
         layout.addLayout(input_layout)
         layout.addWidget(self.scroll_area)
 
+        # Indicador tipo "pill" para el modo minimizado de carga
+        self.pill_indicator = QPushButton("⛶")
+        self.pill_indicator.setFixedSize(32, 32)
+        self.pill_indicator.setObjectName("PillIndicator")
+        self.pill_indicator.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.pill_indicator.clicked.connect(self.expand_from_pill)
+        self.pill_indicator.hide()
+        layout.addWidget(self.pill_indicator, alignment=Qt.AlignmentFlag.AlignCenter)
+
+        # Estado interno para el modo pill
+        self._pending_response = None
+        self._is_error_response = False
+        self._is_pill_mode = False
+
         self.resize(400, 150)
 
     def eventFilter(self, obj, event):
@@ -152,7 +166,7 @@ class OverlayWindow(QWidget):
         provider = self.provider_select.currentText()
         use_mcp = self.mcp_checkbox.isChecked()
 
-        self.show_message(f"Analizando con {provider}...", is_loading=True)
+        self._show_loading_pill(provider)
         self.send_btn.setEnabled(False)
         self.input_box.setEnabled(False)
 
@@ -164,13 +178,19 @@ class OverlayWindow(QWidget):
     def on_result(self, ans, mod):
         self.send_btn.setEnabled(True)
         self.input_box.setEnabled(True)
-        self.show_message(f"[{mod}]\n\n{ans}")
         self.input_box.clear()
+        # Guardar respuesta y cambiar pill a "listo"
+        self._pending_response = f"[{mod}]\n\n{ans}"
+        self._is_error_response = False
+        self._show_pill_ready()
 
     def on_error(self, err_msg):
         self.send_btn.setEnabled(True)
         self.input_box.setEnabled(True)
-        self.show_message(f"Error: {err_msg}", is_error=True)
+        # Guardar error y cambiar pill a "listo" (con error)
+        self._pending_response = f"Error: {err_msg}"
+        self._is_error_response = True
+        self._show_pill_ready()
 
     def set_input_visible(self, visible):
         self.prompt_select.setVisible(visible)
@@ -179,24 +199,79 @@ class OverlayWindow(QWidget):
         self.input_box.setVisible(visible)
         self.send_btn.setVisible(visible)
 
-    def show_message(self, text, is_loading=False, is_error=False):
+    def _show_loading_pill(self, provider=""):
+        """Minimiza el overlay a un pill de carga en la esquina inferior izquierda."""
+        self._is_pill_mode = True
+        self._pending_response = None
+        self.set_input_visible(False)
+        self.scroll_area.hide()
+        self.minimize_btn.hide()
+        self.close_btn.hide()
+
+        self.pill_indicator.setText("○")
+        self.pill_indicator.setToolTip(f"Analizando con {provider}...")
+        self.pill_indicator.setStyleSheet(
+            "QPushButton { background-color: rgba(240, 240, 240, 200); color: #888;"
+            " border: 1px solid rgba(200, 200, 200, 150); border-radius: 16px;"
+            " font-size: 16px; font-family: 'Segoe UI Symbol', 'Segoe UI'; }"
+            " QPushButton:hover { background-color: rgba(230, 230, 230, 220); color: #555; }"
+        )
+        self.pill_indicator.show()
+
+        self.resize(44, 44)
+        screen = QApplication.primaryScreen().availableGeometry()
+        self.move(12, screen.height() - 56)
+        self.show()
+
+    def _show_pill_ready(self):
+        """Cambia el pill a estado 'listo' indicando que la respuesta está disponible."""
+        self.pill_indicator.setText("●")
+        self.pill_indicator.setToolTip("Respuesta lista — Click para ver")
+        self.pill_indicator.setStyleSheet(
+            "QPushButton { background-color: rgba(240, 240, 240, 200); color: #333;"
+            " border: 1px solid rgba(200, 200, 200, 150); border-radius: 16px;"
+            " font-size: 16px; font-family: 'Segoe UI Symbol', 'Segoe UI'; }"
+            " QPushButton:hover { background-color: rgba(230, 230, 230, 220); color: #111; }"
+        )
+
+    def expand_from_pill(self):
+        """Expande el pill para mostrar la respuesta completa."""
+        if not self._pending_response:
+            return
+
+        self._is_pill_mode = False
+        self.pill_indicator.hide()
+
+        # Mostrar la respuesta en el área de scroll
+        self.scroll_area.show()
+        if self._is_error_response:
+            self.output_label.setStyleSheet("color: #ef4444; font-weight: bold;")
+        else:
+            self.output_label.setStyleSheet("")
+        self.output_label.setText(self._pending_response)
+
+        self.set_input_visible(False)
+        self.close_btn.show()
+        self.resize(400, 150)
+
+        # Reposicionar al centro-inferior
+        screen = QApplication.primaryScreen().availableGeometry()
+        x = (screen.width() - self.width()) // 2
+        y = screen.height() - self.height() - 20
+        self.move(x, y)
+
+    def show_message(self, text, is_error=False):
+        """Muestra un mensaje directo (errores de validación, etc.) sin pasar por el pill."""
         self.scroll_area.show()
         if is_error:
             self.output_label.setStyleSheet("color: #ef4444; font-weight: bold;")
-        elif is_loading:
-            self.output_label.setStyleSheet("color: #3b82f6; font-style: italic;")
         else:
             self.output_label.setStyleSheet("")
-        
         self.output_label.setText(text)
-        
-        # Ocultar los inputs para dejar solo la respuesta
         self.set_input_visible(False)
-        
-        # Ajustar tamaño
-        self.resize(400, 350)
-        
-        # Reposicionar usando availableGeometry para evitar la barra de tareas
+        self.close_btn.show()
+        self.resize(400, 150)
+
         screen = QApplication.primaryScreen().availableGeometry()
         x = (screen.width() - self.width()) // 2
         y = screen.height() - self.height() - 20
@@ -217,11 +292,22 @@ class OverlayWindow(QWidget):
         self.base64_image = b64_img
         self.apply_theme()
         
+        # Resetear estado pill
+        self._is_pill_mode = False
+        self._pending_response = None
+        self.pill_indicator.hide()
+        
         self.scroll_area.hide()
         self.set_input_visible(True)
+        self.minimize_btn.show()
+        self.close_btn.show()
         self.resize(400, 150)
         self.input_box.clear()
-        
+
+        # Auto-seleccionar el primer prompt si hay alguno disponible
+        if self.prompt_select.count() > 1:
+            self.prompt_select.setCurrentIndex(1)
+
         # Reposicionar usando availableGeometry
         screen = QApplication.primaryScreen().availableGeometry()
         x = (screen.width() - self.width()) // 2
