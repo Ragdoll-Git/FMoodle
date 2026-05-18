@@ -35,14 +35,13 @@ class ConfigManager:
         
         if not self.is_portable:
             appdata_dir = os.environ.get("APPDATA", "")
-            if appdata_dir:
-                base_dir = os.path.join(appdata_dir, SERVICE_NAME)
-                os.makedirs(base_dir, exist_ok=True)
-                self.config_path = os.path.join(base_dir, config_path)
-                self.prompts_path = os.path.join(base_dir, prompts_path)
-            else:
-                self.config_path = config_path
-                self.prompts_path = prompts_path
+            if not appdata_dir:
+                # Fallback: usar directorio home del usuario si APPDATA no está definido
+                appdata_dir = os.path.join(os.path.expanduser("~"), "AppData", "Roaming")
+            base_dir = os.path.join(appdata_dir, SERVICE_NAME)
+            os.makedirs(base_dir, exist_ok=True)
+            self.config_path = os.path.join(base_dir, config_path)
+            self.prompts_path = os.path.join(base_dir, prompts_path)
         else:
             self.config_path = config_path
             self.prompts_path = prompts_path
@@ -111,15 +110,21 @@ class ConfigManager:
     def save_config(self):
         if self.is_portable:
             return
-        with open(self.config_path, "w", encoding="utf-8") as f:
-            json.dump(self.config, f, indent=4, ensure_ascii=False)
+        try:
+            with open(self.config_path, "w", encoding="utf-8") as f:
+                json.dump(self.config, f, indent=4, ensure_ascii=False)
+        except PermissionError:
+            print(f"[WARN] No se pudo guardar config en: {self.config_path}")
 
     def save_prompts(self, prompts):
         self.prompts = prompts
         if self.is_portable:
             return
-        with open(self.prompts_path, "w", encoding="utf-8") as f:
-            json.dump(self.prompts, f, indent=4, ensure_ascii=False)
+        try:
+            with open(self.prompts_path, "w", encoding="utf-8") as f:
+                json.dump(self.prompts, f, indent=4, ensure_ascii=False)
+        except PermissionError:
+            print(f"[WARN] No se pudo guardar prompts en: {self.prompts_path}")
 
     def get(self, key, default=None):
         if key.endswith("_API_KEY"):
