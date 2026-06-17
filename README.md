@@ -20,18 +20,33 @@ Originalmente nacida como una extensión web, FMoodle ha evolucionado a un robus
 
 ## 📁 Estructura del Proyecto
 
+El repositorio está organizado en dos carpetas según el tipo de distribución:
+
+### `PC/` — Aplicación de escritorio (Python / PySide6)
+
 * `core/`: Contiene el enrutador de IA (`providers.py`) y la lógica de conexión al servidor MCP (`mcp.py`).
 * `ui/`: Todos los componentes visuales interactivos (`overlay.py`, `settings.py`, `theme.py`).
 * `utils/`: Herramientas del sistema, persistencia y capturas (`config.py`, `capture.py`, `autostart.py`).
 * `main.py`: Punto de entrada clásico para la aplicación instalable persistente.
 * `portable.py`: Punto de entrada especial que bloquea la escritura en disco (Modo RAM).
+* `build.py` / `inno_setup.iss`: Scripts de compilación del portable y del instalador.
+
+### `extension/` — Extensión de navegador (Chrome / Manifest V3)
+
+* `manifest.json`: Manifiesto de la extensión (Manifest V3).
+* `background.js`: Service worker que orquesta la captura y las peticiones a las IAs.
+* `content.js`: Script inyectado en la pestaña activa para capturar y mostrar resultados.
+* `claude.js`, `groq.js`, `openai.js`: Conectores por proveedor de IA.
+* `options.html` / `options.js`: Página de opciones y configuración.
+* `prompts.js`: Gestión de prompts personalizados.
 
 ## 🛡️ Versiones y Distribución
 
-El proyecto incluye un script de automatización (`build.py`) impulsado por **PyInstaller** que compila la aplicación en dos formatos listos para usar en la carpeta `/Releases`:
+El proyecto ofrece **tres formatos de distribución**. La app de escritorio se compila con el script de automatización `PC/build.py` (impulsado por **PyInstaller**), y la extensión se empaqueta como `.zip`. En cada release de GitHub se publican los tres:
 
-1. **FMoodle Installer:** Versión estándar para instalar permanentemente en el sistema.
+1. **FMoodle Installer:** Versión de escritorio estándar para instalar permanentemente en el sistema.
 2. **FMoodle Portable:** Un solo `.exe` que puedes llevar en un USB, ejecutar sin permisos de administrador y usar con privacidad absoluta.
+3. **FMoodle Extension (Chrome):** La extensión de navegador (`FMoodle_Extension.zip`) para cargar en Chrome/Edge mediante "Cargar descomprimida" (modo desarrollador).
 
 ---
 Para aprender cómo instalar, compilar desde el código fuente o configurar tu versión portable, por favor lee la guía en el archivo **[INSTRUCCIONES.md](INSTRUCCIONES.md)**.
@@ -42,7 +57,7 @@ Para aprender cómo instalar, compilar desde el código fuente o configurar tu v
 Sí. La versión instalada (persistente) guarda sus datos en tu carpeta secreta de usuario (`AppData`) para no tener problemas de permisos. Además, si activas la opción "Iniciar automáticamente con Windows" en la configuración, el programa se añadirá al registro interno de tu sistema (`winreg`) y se ejecutará silenciosamente en segundo plano cada vez que enciendas tu computadora.
 
 **¿Dónde se guarda o cómo funciona exactamente la versión Portable?**
-La versión portable (`FMoodle_Portable.exe`) es un archivo único que se genera en la carpeta `dist/` al compilar. Puedes llevarte ese ejecutable en un pendrive a cualquier PC. Al ejecutarse, entra en modo "Zero-Knowledge": no escribe NADA en el disco duro (ni archivos de configuración, ni guarda contraseñas en el administrador de credenciales de Windows). Todo se guarda exclusivamente en la memoria RAM y se pierde de forma segura en cuanto cierras la aplicación.
+La versión portable (`FMoodle_Portable.exe`) es un archivo único que se genera en la carpeta `PC/dist/` al compilar. Puedes llevarte ese ejecutable en un pendrive a cualquier PC. Al ejecutarse, entra en modo "Zero-Knowledge": no escribe NADA en el disco duro (ni archivos de configuración, ni guarda contraseñas en el administrador de credenciales de Windows). Todo se guarda exclusivamente en la memoria RAM y se pierde de forma segura en cuanto cierras la aplicación.
 
 **¿Qué pasa con los "warnings" o advertencias naranjas de Inno Setup al compilar el instalador?**
 En versiones modernas de Inno Setup (6+), advertencias como `Warning: Architecture identifier "x64" is deprecated` o referidas al uso de `{pf}` son normales y no rompen tu instalador. De todas formas, la plantilla `inno_setup.iss` de este proyecto ya utiliza la sintaxis moderna (`x64compatible` y `{autopf}`) para evitar esas alertas.

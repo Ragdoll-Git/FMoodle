@@ -6,7 +6,7 @@ Este documento detalla cómo utilizar, instalar y compilar **FMoodle Desktop** d
 
 ## 1. Instalación Rápida (Usuarios Finales)
 
-Si solo quieres usar el programa, dirígete a la carpeta `Releases/` en el código fuente (o descárgalos desde GitHub Releases) y elige tu versión preferida:
+Si solo quieres usar el programa, dirígete a la carpeta `PC/Releases/` en el código fuente (o descárgalos desde GitHub Releases) y elige tu versión preferida:
 
 ### Opción A: Instalador Persistente (`FMoodle_Installer.exe`)
 Ideal para tu computadora personal de uso diario.
@@ -23,11 +23,19 @@ Ideal para computadoras de terceros, bibliotecas, oficinas o pendrives.
 3. Pon tus API Keys temporalmente en Ajustes.
 4. Cuando cierres la ventana, la memoria RAM se vaciará y la PC quedará sin ningún rastro de tus configuraciones o claves.
 
+### Opción C: Extensión de Chrome (`FMoodle_Extension.zip`)
+Ideal para usar FMoodle directamente dentro del navegador.
+1. Descarga `FMoodle_Extension.zip` desde GitHub Releases y descomprímelo (o usa directamente la carpeta `extension/` del código fuente).
+2. Abre Chrome/Edge y ve a `chrome://extensions`.
+3. Activa el **Modo de desarrollador** (interruptor en la esquina superior derecha).
+4. Pulsa **"Cargar descomprimida"** y selecciona la carpeta descomprimida (la que contiene `manifest.json`).
+5. Abre las **Opciones** de la extensión e introduce tus API Keys.
+
 ---
 
-## 2. Configuración para Desarrolladores
+## 2. Configuración para Desarrolladores (App de Escritorio)
 
-Si quieres modificar el código de FMoodle en tu computadora, sigue estos pasos.
+Si quieres modificar el código de la aplicación de escritorio (carpeta `PC/`), sigue estos pasos.
 
 ### Prerrequisitos
 * **Python 3.10+** (Recomendado 3.11 o superior).
@@ -35,12 +43,12 @@ Si quieres modificar el código de FMoodle en tu computadora, sigue estos pasos.
 
 ### Configuración del Entorno Virtual
 1. Abre tu terminal (PowerShell o CMD).
-2. Clona el repositorio y entra a la carpeta:
+2. Clona el repositorio y entra a la carpeta de la app de escritorio:
    ```powershell
-   git clone https://github.com/Lautaro-cloud/FMoodle.git
-   cd FMoodle/FMoodle
+   git clone https://github.com/Ragdoll-Git/FMoodle.git
+   cd FMoodle/PC
    ```
-3. Crea y activa tu entorno virtual:
+3. Crea y activa tu entorno virtual (dentro de `PC/`):
    ```powershell
    python -m venv .venv
    .\.venv\Scripts\activate
@@ -71,8 +79,10 @@ Para generar tus propios `.exe`, FMoodle cuenta con un script de compilación in
    ```powershell
    python build.py
    ```
-4. Esto limpiará las builds anteriores y creará una carpeta `dist/` con las nuevas compilaciones y la carpeta `Releases/` lista para distribuir.
+4. Esto limpiará las builds anteriores y creará una carpeta `PC/dist/` con las nuevas compilaciones, lista para distribuir.
+
+> **Nota:** todos los comandos de esta sección (`pip install`, `python main.py`, `python portable.py`, `python build.py`) se ejecutan desde la carpeta `PC/`.
 
 ### Crear un Instalador Profesional
 Si deseas generar un instalador con formato asistente (Next > Next > Install), puedes descargar **Inno Setup Compiler**. 
-Abre el archivo `inno_setup.iss` con este programa y dale al botón "Compile". Generará el instalador automáticamente en la carpeta `Output/`. *(Nota vital: Debes haber ejecutado `build.py` primero para que se genere la carpeta `dist/`, o de lo contrario Inno Setup lanzará un error de "No files found").*
+Abre el archivo `PC/inno_setup.iss` con este programa y dale al botón "Compile". Generará el instalador automáticamente en la carpeta `PC/Output/`. *(Nota vital: Debes haber ejecutado `build.py` primero para que se genere la carpeta `PC/dist/`, o de lo contrario Inno Setup lanzará un error de "No files found").*
