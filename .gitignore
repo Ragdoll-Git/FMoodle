@@ -10,3 +10,4 @@ Output/
 .pytest_cache/
 tests/
 WindowsSandbox.wsb
+*.log

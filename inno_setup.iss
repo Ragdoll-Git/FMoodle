@@ -1,6 +1,13 @@
+; La versión se puede pasar desde la línea de comandos con /DMyAppVersion=x.y.z
+; (lo hace el workflow de GitHub Actions a partir del tag). Si no se define,
+; se usa este valor por defecto para los builds locales.
+#ifndef MyAppVersion
+  #define MyAppVersion "3.6.0"
+#endif
+
 [Setup]
 AppName=FMoodle
-AppVersion=1.1
+AppVersion={#MyAppVersion}
 DefaultDirName={autopf}\FMoodle
 DefaultGroupName=FMoodle
 OutputBaseFilename=FMoodle_Installer

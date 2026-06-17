@@ -13,8 +13,13 @@ def build():
     if os.path.exists("build"):
         shutil.rmtree("build")
 
-    # Forzamos la ruta al PyInstaller dentro del entorno virtual
-    pyinstaller_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".venv", "Scripts", "pyinstaller.exe")
+    # Usamos el PyInstaller del entorno virtual si existe (desarrollo local);
+    # si no, recurrimos al módulo del intérprete actual (p. ej. en GitHub Actions).
+    venv_pyinstaller = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".venv", "Scripts", "pyinstaller.exe")
+    if os.path.exists(venv_pyinstaller):
+        pyinstaller_cmd = [venv_pyinstaller]
+    else:
+        pyinstaller_cmd = [sys.executable, "-m", "PyInstaller"]
 
     # Argumentos comunes: datos empaquetados y módulos ocultos
     common_args = [
@@ -27,7 +32,7 @@ def build():
 
     print("Compilando versión Persistente (FMoodle.exe)...")
     subprocess.run([
-        pyinstaller_path,
+        *pyinstaller_cmd,
         "--noconfirm",
         "--onedir",
         "--windowed",
@@ -38,7 +43,7 @@ def build():
 
     print("Compilando versión Portable (FMoodle_Portable.exe)...")
     subprocess.run([
-        pyinstaller_path,
+        *pyinstaller_cmd,
         "--noconfirm",
         "--onefile",
         "--windowed",
