@@ -3,6 +3,7 @@ name: Build and Release FMoodle
 on:
   push:
     tags:
+      - 'FMoodle-v*'
       - 'v*'
   workflow_dispatch:
 
@@ -37,7 +38,7 @@ jobs:
       shell: pwsh
       run: |
         $ref = "${{ github.ref_name }}"
-        if ($ref -match '^v?(\d+\.\d+(\.\d+)?)') {
+        if ($ref -match '(\d+\.\d+(\.\d+)?)') {
           $version = $Matches[1]
         } else {
           $version = "3.6.0"
