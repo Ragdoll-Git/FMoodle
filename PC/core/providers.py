@@ -21,10 +21,18 @@ _KEY_NAMES = {
 _model_cache = {}
 
 # Substrings que identifican modelos multimodales (visión) en Nvidia.
+# Solo señales precisas: NO usar familias genéricas como "llama-3.2", porque
+# sus variantes -1b/-3b son SOLO texto (únicamente las "-vision-" ven imágenes).
 _NVIDIA_VISION_HINTS = (
     "vision", "-vl", "vl-", "vila", "llava", "neva", "paligemma",
-    "fuyu", "kosmos", "phi-3.5-vision", "llama-3.2",
+    "fuyu", "kosmos", "internvl", "qwen2-vl", "qwen2.5-vl",
 )
+
+
+def _nvidia_is_vision(model_id):
+    """True si el id de modelo de Nvidia parece soportar imágenes (visión)."""
+    low = model_id.lower()
+    return any(hint in low for hint in _NVIDIA_VISION_HINTS)
 
 
 # ----------------------------- Detección de modelo -----------------------------
@@ -72,7 +80,7 @@ def _detect_nvidia_model(api_key):
     if not ids:
         raise Exception("No se encontró ningún modelo en Nvidia.")
 
-    vision = [i for i in ids if any(h in i.lower() for h in _NVIDIA_VISION_HINTS)]
+    vision = [i for i in ids if _nvidia_is_vision(i)]
     if vision:
         chosen = vision[0]
         return {"model": chosen, "name": f"Nvidia ({chosen})", "multimodal": True}
