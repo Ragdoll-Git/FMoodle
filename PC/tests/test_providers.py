@@ -123,6 +123,41 @@ def test_detect_nvidia_catalogo_solo_texto(monkeypatch):
     assert info["multimodal"] is False
 
 
+def test_detect_groq_prefiere_scout_conocido(monkeypatch):
+    payload = {"data": [
+        {"id": "llama-3.3-70b-versatile"},
+        {"id": "meta-llama/llama-4-maverick-17b-128e-instruct"},
+        {"id": "meta-llama/llama-4-scout-17b-16e-instruct"},
+    ]}
+    monkeypatch.setattr(providers.requests, "get", lambda *a, **k: _Resp(payload))
+
+    info = providers._detect_groq_model("KEY")
+    assert info["model"] == providers.GROQ_DEFAULT_MODEL
+    assert info["multimodal"] is True
+
+
+def test_detect_groq_usa_otro_multimodal_si_no_esta_scout(monkeypatch):
+    payload = {"data": [
+        {"id": "llama-3.3-70b-versatile"},
+        {"id": "meta-llama/llama-4-maverick-17b-128e-instruct"},
+    ]}
+    monkeypatch.setattr(providers.requests, "get", lambda *a, **k: _Resp(payload))
+
+    info = providers._detect_groq_model("KEY")
+    assert providers._groq_is_vision(info["model"])
+    assert "maverick" in info["model"]
+
+
+def test_detect_groq_default_si_falla_la_red(monkeypatch):
+    def boom(*a, **k):
+        raise Exception("sin red")
+    monkeypatch.setattr(providers.requests, "get", boom)
+
+    info = providers._detect_groq_model("KEY")
+    assert info["model"] == providers.GROQ_DEFAULT_MODEL
+    assert info["multimodal"] is True
+
+
 def test_detect_gemini_catalogo_grande(monkeypatch):
     # Mezcla realista: embeddings, imagen, tts, varias versiones de flash/pro.
     payload = {"models": [

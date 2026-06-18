@@ -35,6 +35,18 @@ def _nvidia_is_vision(model_id):
     return any(hint in low for hint in _NVIDIA_VISION_HINTS)
 
 
+# Modelo de Groq conocido y multimodal (el que se usaba antes). Se usa como
+# preferido y como valor por defecto si la detección no encuentra nada mejor.
+GROQ_DEFAULT_MODEL = "meta-llama/llama-4-scout-17b-16e-instruct"
+_GROQ_VISION_HINTS = ("llama-4", "scout", "maverick", "vision", "-vl")
+
+
+def _groq_is_vision(model_id):
+    """True si el id de modelo de Groq parece soportar imágenes (visión)."""
+    low = model_id.lower()
+    return any(hint in low for hint in _GROQ_VISION_HINTS)
+
+
 # ----------------------------- Detección de modelo -----------------------------
 
 def _detect_gemini_model(api_key):
@@ -88,6 +100,26 @@ def _detect_nvidia_model(api_key):
     return {"model": ids[0], "name": f"Nvidia ({ids[0]})", "multimodal": False}
 
 
+def _detect_groq_model(api_key):
+    """Lista los modelos de Groq (API compatible con OpenAI) y prefiere uno
+    multimodal. Si no puede detectar, usa el modelo conocido (Llama 4 Scout)."""
+    try:
+        url = "https://api.groq.com/openai/v1/models"
+        headers = {"Authorization": f"Bearer {api_key.strip()}", "Accept": "application/json"}
+        resp = requests.get(url, headers=headers, timeout=15)
+        resp.raise_for_status()
+        ids = [m.get("id", "") for m in resp.json().get("data", []) if m.get("id")]
+    except Exception:
+        ids = []
+
+    if GROQ_DEFAULT_MODEL in ids:
+        chosen = GROQ_DEFAULT_MODEL          # el conocido sigue disponible
+    else:
+        vision = [i for i in ids if _groq_is_vision(i)]
+        chosen = vision[0] if vision else GROQ_DEFAULT_MODEL
+    return {"model": chosen, "name": f"Groq ({chosen})", "multimodal": True}
+
+
 def _resolve_model(provider, api_key):
     cache_key = (provider, api_key.strip())
     if cache_key in _model_cache:
@@ -98,12 +130,7 @@ def _resolve_model(provider, api_key):
     elif provider == "nvidia":
         info = _detect_nvidia_model(api_key)
     elif provider == "groq":
-        # Groq mantiene su modelo multimodal conocido (Llama 4 Scout).
-        info = {
-            "model": "meta-llama/llama-4-scout-17b-16e-instruct",
-            "name": "Groq (Llama 4 Scout)",
-            "multimodal": True,
-        }
+        info = _detect_groq_model(api_key)
     else:
         raise Exception(f"Proveedor no soportado: {provider}")
 
