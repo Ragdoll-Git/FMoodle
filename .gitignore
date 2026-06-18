@@ -8,6 +8,6 @@ dist/
 Output/
 *.spec
 .pytest_cache/
-tests/
+PC/tests/logs/
 WindowsSandbox.wsb
 *.log

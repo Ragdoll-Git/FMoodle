@@ -64,6 +64,13 @@ Puedes ejecutar las dos versiones directo desde el intérprete:
 - **Modo normal:** `python main.py`
 - **Modo en RAM (Portable):** `python portable.py`
 
+### Ejecutar los Tests
+La carpeta `PC/tests/` contiene una suite de `pytest` (smoke tests de importación y verificación del contrato del modo portable: que no escribe a disco ni toca el Almacén de Credenciales). Desde `PC/`:
+```powershell
+pip install -r requirements-dev.txt
+pytest
+```
+
 ---
 
 ## 3. Compilación y Empaquetado
