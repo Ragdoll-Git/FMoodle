@@ -1,11 +1,13 @@
 import os
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, 
+    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
     QPushButton, QCheckBox, QComboBox, QMessageBox, QTabWidget,
-    QListWidget, QTextEdit
+    QListWidget, QTextEdit, QProgressBar, QApplication
 )
+from PySide6.QtCore import QThread
 from utils.config import config_manager
 from utils import autostart
+from core import updater
 
 class SettingsWindow(QWidget):
     def __init__(self):
@@ -28,6 +30,11 @@ class SettingsWindow(QWidget):
         self.tab_prompts = QWidget()
         self.setup_prompts_tab()
         self.tabs.addTab(self.tab_prompts, "Mis Prompts")
+
+        # --- Pestaña 3: Actualizaciones ---
+        self.tab_updates = QWidget()
+        self.setup_updates_tab()
+        self.tabs.addTab(self.tab_updates, "Actualizaciones")
 
         main_layout.addWidget(self.tabs)
 
@@ -177,3 +184,119 @@ class SettingsWindow(QWidget):
         
         QMessageBox.information(self, "Guardado", "Configuración guardada correctamente.")
         self.close()
+
+    # ---------------------- Actualizaciones ----------------------
+
+    def setup_updates_tab(self):
+        layout = QVBoxLayout(self.tab_updates)
+        self._pending_url = None
+        self._upd_thread = None
+        self._upd_worker = None
+
+        layout.addWidget(QLabel(f"Versión actual: {updater.CURRENT_VERSION}"))
+
+        self.upd_status = QLabel("")
+        self.upd_status.setWordWrap(True)
+        layout.addWidget(self.upd_status)
+
+        self.upd_check_btn = QPushButton("Buscar actualizaciones")
+        self.upd_check_btn.clicked.connect(self.on_check_clicked)
+        layout.addWidget(self.upd_check_btn)
+
+        self.upd_progress = QProgressBar()
+        self.upd_progress.setVisible(False)
+        layout.addWidget(self.upd_progress)
+
+        self.upd_update_btn = QPushButton("Actualizar ahora")
+        self.upd_update_btn.setVisible(False)
+        self.upd_update_btn.clicked.connect(self.on_update_clicked)
+        layout.addWidget(self.upd_update_btn)
+
+        if updater.is_portable():
+            note = ("Modo portable: se descargará el nuevo ejecutable y se "
+                    "reemplazará al reiniciarse la aplicación.")
+        else:
+            note = ("Se descargará el instalador y se ejecutará "
+                    "(puede pedir permisos de administrador de Windows).")
+        hint = QLabel(note)
+        hint.setWordWrap(True)
+        layout.addWidget(hint)
+
+        layout.addStretch()
+
+    def _set_update_busy(self, busy):
+        self.upd_check_btn.setEnabled(not busy)
+        self.upd_update_btn.setEnabled(not busy)
+
+    def _make_worker_thread(self):
+        thread = QThread()
+        worker = updater.UpdateWorker()
+        worker.moveToThread(thread)
+        worker.progress.connect(self.upd_progress.setValue)
+        worker.error.connect(self._on_update_error)
+        worker.error.connect(thread.quit)
+        thread.finished.connect(worker.deleteLater)
+        thread.finished.connect(thread.deleteLater)
+        # Guardamos referencias para que el GC no destruya el hilo/worker.
+        self._upd_thread = thread
+        self._upd_worker = worker
+        return thread, worker
+
+    def on_check_clicked(self):
+        self._set_update_busy(True)
+        self.upd_status.setText("Buscando actualizaciones...")
+        thread, worker = self._make_worker_thread()
+        worker.check_finished.connect(self._on_check_finished)
+        worker.check_finished.connect(thread.quit)
+        thread.started.connect(worker.do_check)
+        thread.start()
+
+    def _on_check_finished(self, info):
+        self._set_update_busy(False)
+        if info["available"]:
+            self._pending_url = info["download_url"]
+            self.upd_status.setText(f"¡Nueva versión disponible: {info['latest_str']}!")
+            self.upd_update_btn.setVisible(True)
+        else:
+            self.upd_status.setText(f"Estás en la última versión ({info['current']}).")
+            self.upd_update_btn.setVisible(False)
+
+    def on_update_clicked(self):
+        if not updater.is_frozen():
+            QMessageBox.information(
+                self, "Solo en la app compilada",
+                "La auto-actualización solo funciona en la versión compilada "
+                "(.exe), no en modo desarrollo.")
+            return
+        if not self._pending_url:
+            return
+        self._set_update_busy(True)
+        self.upd_progress.setVisible(True)
+        self.upd_progress.setValue(0)
+        self.upd_status.setText("Descargando actualización...")
+        url = self._pending_url
+        thread, worker = self._make_worker_thread()
+        worker.download_finished.connect(self._on_download_finished)
+        worker.download_finished.connect(thread.quit)
+        thread.started.connect(lambda: worker.do_download(url))
+        thread.start()
+
+    def _on_download_finished(self, path):
+        self.upd_status.setText("Descarga completa. Aplicando actualización...")
+        try:
+            updater.apply_update(path)
+        except Exception as exc:
+            self._set_update_busy(False)
+            self.upd_progress.setVisible(False)
+            QMessageBox.warning(self, "Error al actualizar", str(exc))
+            return
+        QMessageBox.information(
+            self, "Actualizando",
+            "FMoodle se cerrará para completar la actualización.")
+        QApplication.instance().quit()
+
+    def _on_update_error(self, msg):
+        self._set_update_busy(False)
+        self.upd_progress.setVisible(False)
+        QMessageBox.warning(
+            self, "Error", f"No se pudo completar la operación:\n{msg}")

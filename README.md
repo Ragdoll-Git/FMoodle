@@ -17,6 +17,7 @@ Originalmente nacida como una extensión web, FMoodle ha evolucionado a un robus
 * **🚀 Modo Portable (RAM-Only):** Puede ejecutarse en modo 100% portable donde los datos residen únicamente en la memoria RAM, sin dejar rastros de configuración o claves en el disco de la computadora.
 * **💻 Interfaz Moderna (PySide6):** UI construida con Qt/PySide6, con soporte de temas, modo siempre-visible (Always on Top) y diseño responsivo.
 * **⚡ Autoinicio de Windows:** Se integra silenciosamente con Windows, ejecutándose en segundo plano al iniciar sesión mediante el registro de Windows (`winreg`).
+* **🔄 Auto-actualización:** Desde el menú de Configuración (pestaña *Actualizaciones*) la app consulta el último release en GitHub y, si hay una versión nueva, descarga y aplica la actualización automáticamente (el instalador se relanza; el portable se reemplaza a sí mismo).
 
 ## 📁 Estructura del Proyecto
 
