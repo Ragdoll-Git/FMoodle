@@ -4,7 +4,8 @@ from PySide6.QtWidgets import (
     QPushButton, QCheckBox, QComboBox, QMessageBox, QTabWidget,
     QListWidget, QTextEdit, QProgressBar, QApplication
 )
-from PySide6.QtCore import QThread
+from PySide6.QtCore import QThread, QUrl
+from PySide6.QtGui import QDesktopServices
 from utils.config import config_manager
 from utils import autostart
 from core import updater
@@ -190,6 +191,7 @@ class SettingsWindow(QWidget):
     def setup_updates_tab(self):
         layout = QVBoxLayout(self.tab_updates)
         self._pending_url = None
+        self._pending_html_url = None
         self._upd_thread = None
         self._upd_worker = None
 
@@ -255,6 +257,7 @@ class SettingsWindow(QWidget):
         self._set_update_busy(False)
         if info["available"]:
             self._pending_url = info["download_url"]
+            self._pending_html_url = info.get("html_url", "")
             self.upd_status.setText(f"¡Nueva versión disponible: {info['latest_str']}!")
             self.upd_update_btn.setVisible(True)
         else:
@@ -269,6 +272,20 @@ class SettingsWindow(QWidget):
                 "(.exe), no en modo desarrollo.")
             return
         if not self._pending_url:
+            return
+        # El portable se reemplaza a sí mismo: si está en una carpeta sin
+        # permisos de escritura (p. ej. Archivos de programa), avisamos antes
+        # de descargar en vez de fallar en silencio.
+        if updater.is_portable() and not updater.portable_target_writable():
+            QMessageBox.warning(
+                self, "No se puede actualizar en esta carpeta",
+                "FMoodle Portable está en una carpeta sin permisos de "
+                "escritura, por lo que no puede reemplazarse a sí mismo.\n\n"
+                "Movelo a un USB o a una carpeta de usuario como Documentos y "
+                "volvé a intentarlo. También podés descargar la nueva versión "
+                "manualmente desde la página del release.")
+            if self._pending_html_url:
+                QDesktopServices.openUrl(QUrl(self._pending_html_url))
             return
         self._set_update_busy(True)
         self.upd_progress.setVisible(True)

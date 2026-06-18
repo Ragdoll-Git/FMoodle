@@ -111,6 +111,27 @@ def test_apply_portable_genera_bat_correcto(monkeypatch, tmp_path):
     assert captured["kwargs"].get("creationflags", 0) != 0
 
 
+def test_portable_target_writable_true(monkeypatch, tmp_path):
+    monkeypatch.setattr(updater.sys, "executable", str(tmp_path / "FMoodle_Portable.exe"))
+    assert updater.portable_target_writable() is True
+
+
+def test_apply_portable_sin_permisos_avisa(monkeypatch, tmp_path):
+    # Si la carpeta del portable no es escribible, NO debe intentar el swap.
+    monkeypatch.setattr(updater, "is_frozen", lambda: True)
+    monkeypatch.setenv("FMOODLE_PORTABLE", "1")
+    monkeypatch.setattr(updater.sys, "executable", str(tmp_path / "FMoodle_Portable.exe"))
+    monkeypatch.setattr(updater, "portable_target_writable", lambda: False)
+
+    spawned = {}
+    monkeypatch.setattr(updater.subprocess, "Popen",
+                        lambda *a, **k: spawned.update(called=True))
+
+    with pytest.raises(PermissionError):
+        updater.apply_update(str(tmp_path / "nuevo.exe"))
+    assert not spawned, "no debe lanzar el .bat si no hay permisos"
+
+
 def test_apply_installer_lanza_ejecutable(monkeypatch, tmp_path):
     monkeypatch.setattr(updater, "is_frozen", lambda: True)
     monkeypatch.delenv("FMOODLE_PORTABLE", raising=False)

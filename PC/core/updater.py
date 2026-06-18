@@ -49,6 +49,23 @@ def asset_name():
     return PORTABLE_ASSET if is_portable() else INSTALLER_ASSET
 
 
+def portable_target_writable():
+    """True si se puede escribir en la carpeta donde vive el .exe portable.
+
+    Si el portable está en una carpeta protegida (p. ej. Archivos de programa),
+    el reemplazo fallaría sin pedir UAC, así que conviene avisar antes.
+    """
+    target_dir = os.path.dirname(sys.executable)
+    test_file = os.path.join(target_dir, ".fmoodle_write_test.tmp")
+    try:
+        with open(test_file, "w") as f:
+            f.write("x")
+        os.remove(test_file)
+        return True
+    except OSError:
+        return False
+
+
 def parse_version(text):
     """Extrae (mayor, menor, parche) de un texto como 'FMoodle-v3.6.3' o '3.6'."""
     match = re.search(r"(\d+)\.(\d+)(?:\.(\d+))?", text or "")
@@ -133,6 +150,10 @@ def _apply_installer(installer_path):
 
 def _apply_portable(new_exe_path):
     current_exe = sys.executable
+    if not portable_target_writable():
+        raise PermissionError(
+            "No hay permisos de escritura en la carpeta del portable."
+        )
     pid = os.getpid()
     bat_path = os.path.join(tempfile.gettempdir(), "fmoodle_update.bat")
 
