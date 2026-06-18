@@ -6,12 +6,12 @@ Originalmente nacida como una extensión web, FMoodle ha evolucionado a un robus
 
 ## ✨ Características Principales
 
-* **🤖 Soporte Multi-Proveedor:**
+* **🤖 Soporte Multi-Proveedor con fallback automático:**
   * **Google Gemini**
-  * **Anthropic Claude 3.5 Sonnet**
-  * **OpenAI (ChatGPT)**
   * **Groq**
-  * **Nvidia Labs (Kimi K2.5)**
+  * **Nvidia Labs**
+
+  La app detecta automáticamente un modelo **multimodal** válido para Gemini y Nvidia (consultando sus modelos disponibles, sin nombres hardcodeados que se desactualizan) y, ante un fallo, hace **fallback** al siguiente proveedor disponible, quedándose en el que funcione hasta que vuelva a fallar. Los proveedores cuyo modelo no soporta imágenes se omiten cuando la consulta incluye una captura.
 * **🔒 Seguridad Zero-Knowledge:** Todas las claves de API (API Keys) se almacenan de manera completamente segura utilizando el Administrador de Credenciales nativo de Windows (Windows Credential Vault). Las claves jamás se guardan en texto plano.
 * **🌐 Soporte MCP (Model Context Protocol):** Integración nativa para consumir recursos y herramientas desde servidores MCP remotos o locales, ampliando las capacidades del asistente de IA.
 * **🚀 Modo Portable (RAM-Only):** Puede ejecutarse en modo 100% portable donde los datos residen únicamente en la memoria RAM, sin dejar rastros de configuración o claves en el disco de la computadora.

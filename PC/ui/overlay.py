@@ -57,7 +57,7 @@ class OverlayWindow(QWidget):
         self.prompt_select.currentIndexChanged.connect(self.on_prompt_selected)
         
         self.provider_select = QComboBox()
-        self.provider_select.addItems(["gemini", "groq", "openai", "claude", "nvidia"])
+        self.provider_select.addItems(["gemini", "groq", "nvidia"])
         self.provider_select.setCurrentText(config_manager.get("preferredProvider", "gemini"))
         self.provider_select.currentTextChanged.connect(
             lambda t: config_manager.set("preferredProvider", t)

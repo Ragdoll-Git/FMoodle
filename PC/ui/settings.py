@@ -56,16 +56,6 @@ class SettingsWindow(QWidget):
         self.groq_key.setEchoMode(QLineEdit.EchoMode.Password)
         layout.addWidget(self.groq_key)
 
-        layout.addWidget(QLabel("OpenAI API Key:"))
-        self.openai_key = QLineEdit(config_manager.get("OPENAI_API_KEY", ""))
-        self.openai_key.setEchoMode(QLineEdit.EchoMode.Password)
-        layout.addWidget(self.openai_key)
-
-        layout.addWidget(QLabel("Claude API Key:"))
-        self.claude_key = QLineEdit(config_manager.get("CLAUDE_API_KEY", ""))
-        self.claude_key.setEchoMode(QLineEdit.EchoMode.Password)
-        layout.addWidget(self.claude_key)
-
         layout.addWidget(QLabel("Nvidia API Key:"))
         self.nvidia_key = QLineEdit(config_manager.get("NVIDIA_API_KEY", ""))
         self.nvidia_key.setEchoMode(QLineEdit.EchoMode.Password)
@@ -169,8 +159,6 @@ class SettingsWindow(QWidget):
         # Guardar Generales
         config_manager.set("GEMINI_API_KEY", self.gemini_key.text().strip())
         config_manager.set("GROQ_API_KEY", self.groq_key.text().strip())
-        config_manager.set("OPENAI_API_KEY", self.openai_key.text().strip())
-        config_manager.set("CLAUDE_API_KEY", self.claude_key.text().strip())
         config_manager.set("NVIDIA_API_KEY", self.nvidia_key.text().strip())
         
         if not os.environ.get("FMOODLE_PORTABLE") == "1":
