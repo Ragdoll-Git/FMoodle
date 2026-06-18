@@ -82,3 +82,44 @@ def test_apply_update_bloqueado_en_desarrollo(monkeypatch):
     monkeypatch.setattr(updater, "is_frozen", lambda: False)
     with pytest.raises(RuntimeError):
         updater.apply_update("cualquier_cosa.exe")
+
+
+def test_apply_portable_genera_bat_correcto(monkeypatch, tmp_path):
+    # Simula app compilada en modo portable; captura el .bat sin ejecutarlo.
+    current_exe = tmp_path / "FMoodle_Portable.exe"
+    current_exe.write_text("viejo")
+    new_exe = tmp_path / "FMoodle_update_xyz.exe"
+    new_exe.write_text("nuevo")
+
+    monkeypatch.setattr(updater, "is_frozen", lambda: True)
+    monkeypatch.setenv("FMOODLE_PORTABLE", "1")
+    monkeypatch.setattr(updater.sys, "executable", str(current_exe))
+    monkeypatch.setattr(updater.tempfile, "gettempdir", lambda: str(tmp_path))
+
+    captured = {}
+    monkeypatch.setattr(updater.subprocess, "Popen",
+                        lambda *a, **k: captured.update(args=a, kwargs=k))
+
+    assert updater.apply_update(str(new_exe)) is True
+
+    bat = (tmp_path / "fmoodle_update.bat").read_text(encoding="utf-8")
+    assert str(current_exe) in bat       # reemplaza el exe actual
+    assert str(new_exe) in bat           # con el nuevo descargado
+    assert "start" in bat                # y lo relanza
+    assert captured, "debe lanzar el .bat de forma desacoplada"
+    # Debe ir desacoplado del proceso para sobrevivir al cierre de la app.
+    assert captured["kwargs"].get("creationflags", 0) != 0
+
+
+def test_apply_installer_lanza_ejecutable(monkeypatch, tmp_path):
+    monkeypatch.setattr(updater, "is_frozen", lambda: True)
+    monkeypatch.delenv("FMOODLE_PORTABLE", raising=False)
+    installer = tmp_path / "FMoodle_Installer.exe"
+    installer.write_text("instalador")
+
+    called = {}
+    monkeypatch.setattr(updater.os, "startfile",
+                        lambda p: called.setdefault("path", p), raising=False)
+
+    assert updater.apply_update(str(installer)) is True
+    assert called["path"] == str(installer)
